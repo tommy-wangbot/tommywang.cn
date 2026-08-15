@@ -9,44 +9,113 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const cardIds: string[] = entry.data.cards ?? [];
-const kicker = entry.data.order === 1 ? '工作方法 · 案例一' : `工作方法 · 案例${entry.data.order}`;
+const toc = (headings ?? []).filter((h: any) => h.depth === 2);
+const kicker = `工作方法 · 案例${entry.data.order}`;
 ---
 
 <BaseLayout title={entry.data.title} active="method" description={entry.data.summary}>
-  <article class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading)) 0;">
-    <span class="kicker">{kicker}</span>
-    <h1 class="h2">{entry.data.title}</h1>
-    <p class="copy" style="margin-top: var(--leading);">{entry.data.summary}</p>
+  <article class="wrap case">
+    <div class="ctop">
+      <span class="ctag">案例</span>
+      <span class="ckicker">{kicker}</span>
+    </div>
+    <h1 class="ch1">{entry.data.title}</h1>
+    <p class="clede">{entry.data.summary}</p>
 
-    <hr />
+    <div class="cbody">
+      {
+        toc.length > 0 && (
+          <nav class="ctoc" aria-label="本页目录">
+            <p class="tl">目录</p>
+            {toc.map((h: any, i: number) => (
+              <a href={`#${h.slug}`}>
+                <span class="tn">{String(i + 1).padStart(2, '0')}</span>
+                <span>{h.text}</span>
+              </a>
+            ))}
+          </nav>
+        )
+      }
 
-    <div class="prose">
-      <Content />
+      <div class="cmain">
+        <div class="prose">
+          <Content />
+        </div>
+
+        {
+          cardIds.length > 0 && (
+            <div class="ccards">
+              <p class="cl">这张卡今天在公开判断记录上的样子</p>
+              {cardIds.map((id) => <JudgmentCard id={id} />)}
+              <p class="cn">
+                全部卡片见 <a href="/research/ledger/">公开判断记录</a>。项目卡的依据在脱敏文件里，读者无法核对——公开记录只放任何人都能拿公开数据去查的判断。
+              </p>
+            </div>
+          )
+        }
+
+        <p class="cback">
+          这套方法的完整工序 → <a href="/method/">工作方法</a>
+        </p>
+      </div>
     </div>
   </article>
-
-  {
-    cardIds.length > 0 && (
-      <section class="dark" style="margin-top: calc(2.4 * var(--leading));">
-        <div class="wrap section">
-          <span class="kicker">这张卡今天在公开判断账本上的样子</span>
-          <h2 class="h3">同一条判断，同一份数据——账本上的记账形态。</h2>
-          <div style="margin-top: calc(1.4 * var(--leading));">
-            {cardIds.map((id) => (
-              <JudgmentCard id={id} />
-            ))}
-          </div>
-          <p class="copy" style="margin-top: var(--leading);">
-            全部卡片见 <a href="/research/ledger/">公开判断账本</a>。
-          </p>
-        </div>
-      </section>
-    )
-  }
-
-  <section class="wrap-narrow" style="padding-block: calc(2.4 * var(--leading));">
-    <p><a class="back" href="/method/">返回工作方法</a></p>
-  </section>
 </BaseLayout>
+
+<style>
+  .case { padding-block: calc(2 * var(--leading)) calc(2.4 * var(--leading)); }
+  .ctop { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  .ctag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 5px 12px;
+  }
+  .ckicker { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-55); }
+  .ch1 {
+    margin: 24px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.32;
+    letter-spacing: 0.01em;
+    max-width: 20em;
+  }
+  .clede { margin: 22px 0 0; font-size: 18px; line-height: 1.9; color: var(--ink-70); max-width: 34em; }
+
+  .cbody { margin-top: 44px; display: grid; grid-template-columns: 14em minmax(0, 1fr); gap: 36px; align-items: start; }
+  .ctoc { position: sticky; top: 92px; border-top: 2px solid var(--ink); padding-top: 14px; }
+  .ctoc .tl { margin: 0 0 12px; font-family: var(--font-heading); font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: var(--ink-55); }
+  .ctoc a {
+    display: grid;
+    grid-template-columns: 2em minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--divider);
+  }
+  .ctoc a:hover { background: var(--surface); }
+  .ctoc .tn { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-55); }
+
+  .cmain { max-width: 38em; }
+  .cmain .prose :global(h2) { scroll-margin-top: 92px; }
+  .ccards { margin-top: calc(1.8 * var(--leading)); }
+  .ccards .cl { margin: 0 0 16px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; color: var(--ink-55); }
+  .ccards .cn { margin: 22px 0 0; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); }
+  .cback { margin: calc(1.6 * var(--leading)) 0 0; padding-top: var(--leading); border-top: 1px solid var(--divider); font-size: 15.5px; color: var(--ink-70); }
+
+  @media (max-width: 900px) {
+    .cbody { grid-template-columns: 1fr; }
+    .ctoc { position: static; }
+  }
+</style>

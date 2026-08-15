@@ -12,30 +12,76 @@ export async function getStaticPaths() {
 
 const { note } = Astro.props;
 const { Content } = await render(note);
+const carded = Boolean(note.data.cardId);
 ---
 
-<BaseLayout bare title={note.data.title} description={note.data.excerpt ?? SITE.tagline}>
-  <!-- 裸页：无导航、无侧栏，仅文章 + 返回 -->
-  <article class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading)) calc(2.4 * var(--leading));">
-    <StatusTag status={note.data.status} cardId={note.data.cardId} />
+<BaseLayout
+  active="notes"
+  title={note.data.title}
+  description={note.data.excerpt ?? SITE.tagline}
+>
+  <article class="wrap-narrow note">
+    <div class="nmeta">
+      <StatusTag status={note.data.status} cardId={note.data.cardId} />
+      <span class="nd">
+        {fmtDate(note.data.date)} · {carded ? `配对卡 ${note.data.cardId}` : '未立卡'}
+      </span>
+    </div>
 
-    <h1 class="display" style="font-size: clamp(28px, 4vw, 44px); margin-top: var(--leading);">
-      {note.data.title}
-    </h1>
-    <p class="muted" style="margin: var(--half) 0 0; font-size: 13.5px; letter-spacing: 0.04em;">
-      {fmtDate(note.data.date)}
-    </p>
+    <h1 class="nh1">{note.data.title}</h1>
 
-    <hr />
+    {
+      note.data.status === '假设' && (
+        <div class="nhypo">
+          <p>
+            先把话说在前面：<strong>这一篇是假设，不是判断。</strong>它有一个我觉得挺有解释力的机制，但支持它的证据还不足以让我据此行动，所以它现在只能停在假设层，不上判断卡。
+          </p>
+        </div>
+      )
+    }
 
     <div class="prose">
       <Content />
     </div>
 
-    <hr />
+    <div class="nfoot">
+      <p class="fl">这篇文章的账本状态</p>
+      {
+        carded ? (
+          <p class="ft">
+            这条判断已经入账，可在 <a href={`/research/ledger/#card-${note.data.cardId}`}>公开判断记录</a> 上看到它的置信度、失效条件与复核历史。改判只追加，不删改。
+          </p>
+        ) : (
+          <p class="ft">
+            这一篇还没有立卡。升级为判断时会在 <a href="/research/ledger/">公开判断记录</a> 上立卡，本页顶部的状态标签同步更新；放弃也记一笔，不删本页。
+          </p>
+        )
+      }
+    </div>
 
-    <p style="margin: 0;">
-      <a class="back" href="/">返回 {SITE.name}</a>
-    </p>
+    <p class="nback"><a class="back" href="/notes/">返回笔记</a></p>
   </article>
 </BaseLayout>
+
+<style>
+  .note { padding-block: calc(2 * var(--leading)) calc(2.4 * var(--leading)); }
+  .nmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  .nmeta .nd { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-55); }
+  .nh1 {
+    margin: 24px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.32;
+    letter-spacing: 0.01em;
+    max-width: 22em;
+  }
+  .nhypo { margin-top: 32px; border-left: 3px solid var(--gold); padding: 2px 0 2px 22px; }
+  .nhypo p { margin: 0; font-size: 16.5px; line-height: 1.95; color: var(--ink-70); }
+  .nhypo strong { color: var(--ink); }
+  .note .prose { margin-top: calc(1.4 * var(--leading)); }
+  .nfoot { margin-top: calc(1.8 * var(--leading)); padding-top: calc(1.2 * var(--leading)); border-top: 2px solid var(--ink); }
+  .nfoot .fl { margin: 0 0 12px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; color: var(--ink-55); }
+  .nfoot .ft { margin: 0; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); max-width: 46em; }
+  .nback { margin: calc(1.4 * var(--leading)) 0 0; }
+</style>

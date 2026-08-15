@@ -1,450 +1,528 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import JudgmentCard from '../../components/JudgmentCard.astro';
-import NoteList from '../../components/NoteList.astro';
-import type { JudgmentCardData } from '../../data/cards';
+import { getCollection } from 'astro:content';
 
-/**
- * 明鉴页正文中「一张判断卡长这样」的示例卡：
- * 取自案例的另一张真实卡（已脱敏），用于展示卡片版式本身。
- * 它不在首批公开账本的 7 张卡内，故不进 cards.json，只在本页内联。
- * 与账本重复的星澜「模式三」卡则共用 cards.json 的 CS-XINGLAN-01。
- */
-const sampleCard: JudgmentCardData = {
-  id: 'JUG-HX-20260624-13',
-  kind: '案例',
-  file: 'judgment_cards / JUG-HX-20260624-13',
-  priority: 'high',
-  title: '星澜传媒战略定位与版权采买生死线（三定前置阻断）',
-  judgment:
-    '押「定位与版权采买归属是 #0 问题」——它不属于三定范围，但不先由母公司定夺，治理判断（#1）与组织判断（#2）全部悬空；建议作为前置议题正式上报决策层，而非在三定内部消化。',
-  confidence: 0.85,
-  confidenceNote: '较上一版 0.70 上调 · 2026-06 访谈直证',
-  weakest:
-    '版权采买确实是该公司不可替代的命脉，而非可被母公司的内容资产管理部门平滑接管的一般职能。',
-  counter:
-    '母公司的内容资产管理部门已具备独立完成版权集采的能力与意愿；非版权业务已有可独立存续的现金流；母公司已明确愿意注入定位与资源。（2026-06 访谈核查：上述反证均未出现，反而出现强正证——受访方亲口「无版权则一大半业务可砍」。）',
-  falsifier:
-    '母公司正式出具定位意见、或版权采买归属作出明确决定——本卡即转入「定位已定」分支，重排 #1 / #2。',
-  openedAt: '2026-06-24',
-  reviewedAt: '2026-06-24',
-  anchors: ['事实账本 · 该公司事实清单', '冲突编号 f19a3c72', '某次工作接触会纪要（已核）'],
-};
+const judgmentParts = [
+  { name: '预测', gloss: '对局势的分析推演', verdict: 'AI 能做，甚至更好。' },
+  { name: '权衡', gloss: '在利润与风险、短期与长期之间说"这个更重要"', verdict: '需要立场与取舍，不存在于任何训练数据里。' },
+  { name: '担责', gloss: '用位子和声誉为后果买单', verdict: 'AI 没有可被问责的身份——它的所有建议都是"无担保的认知支票"，签名必须由人来签。' },
+];
+
+const pains = [
+  { no: '01', title: '上百份材料互相矛盾', body: '161 场访谈、223 份一手资料散落各处，靠通读"找感觉"要花数周，且口径对不齐。' },
+  { no: '02', title: '判断只存在人脑中', body: '关键结论的来龙去脉压在个别人身上，人一忙一走，项目就断档。' },
+  { no: '03', title: '方案会被领导追问', body: '"依据是什么？为什么不选另一个方案？"答不上来，方案可信度当场崩塌。' },
+  { no: '04', title: '新材料不断推翻旧前提', body: '三周前的判断建立在已变化的事实上，没人记得这层依赖，只能凭感觉改稿。' },
+  { no: '05', title: '经验随交付蒸发', body: '项目结束只剩一份 PPT，踩过的坑、做过的权衡、否掉的备选全部消失。' },
+];
+
+const mechanisms = [
+  { name: '决策依据账本', points: ['每个重要结论记账入册', '凭证（原始材料）可查', '账目只增不涂改', '半年后仍能还原"当时为什么这么定"'] },
+  { name: '证据驱动判断', points: ['无依据，不进报告', '找不到证据的论断强制标注"待验证"', '不允许伪装成事实'] },
+  { name: '方案压力测试', points: ['上会之前，系统先扮演最刁钻的领导把方案问一遍', '最坏的问题提前听过、答过、备好弹药'] },
+];
+
+const notThese = [
+  { what: '聊天机器人', why: '它是嵌入工作流程的生产系统。' },
+  { what: 'AI 写作工具', why: '写报告只是最后一道工序。' },
+  { what: '网盘或知识库', why: '知识库存名词，它管理活的判断。' },
+  { what: '取代顾问和决策者', why: '恰恰相反，它让人专注于机器做不了的裁决。' },
+];
+
+const facets = [
+  { no: '01', name: '思考的工业化', body: '高水平分析今天仍是手工作坊：过程在专家脑里、质量靠状态、无法检验。本系统把它改造成工厂——有工序，有质检，有台账，有工艺积累。' },
+  { no: '02', name: '认知复利系统', body: '大多数软件越用越旧，它越用越值钱：持续学习使用组织的管理原则与决策偏好，三年后成为"只懂这家组织的认知底座"。' },
+  { no: '03', name: '三方协同生产', body: 'AI 负责理解（消化材料）与生成（梳理方案），人负责裁决与责任。机器处理噪音与索引，人类负责裁判与背书。' },
+  { no: '04', name: '组织的决策账本', body: '钱有账本：每笔有凭证、能审计、不能涂改。比钱更贵的决策，第一次也有了账。' },
+  { no: '05', name: '不会离职的数字研究团队', body: '专家的判断过程（不只结论，还有依据、权衡、否掉的备选）结构化留存；新人接手从"泡三个月找感觉"变成"直接读账"。' },
+  { no: '06', name: '让答案值得相信', body: '市面上的 AI 帮你更快找到答案；它回答下一个问题：为什么相信这个答案？' },
+];
+
+const pipeline = [
+  { no: '0', name: '输入 · 原始材料', what: '访谈录音 / 会议纪要 / 报表 / 制度文件 / 领导讲话', out: '原始材料统一入口' },
+  { no: '1', name: '原料提纯', what: '杂料变净料：去噪、分类、拆条，每条信息标注来源（哪份文件、哪次访谈、谁说的）', out: '净料待审核清单' },
+  { no: '2', name: '人工质检闸门', what: 'AI 只起草，人批准后方可入账：进账本的每个字都有人负责过', out: '人工审核与签字' },
+  { no: '3', name: '决策依据账本', what: '追加式记录：旧版本保留、变更留痕，任何时候能还原决策现场', out: '组织的长期记忆' },
+  { no: '4', name: '双脑协同', what: '一个 AI 脑 7×24 消化材料，另一个 AI 脑在净料上做高强度推理', out: '理解脑 ＋ 推理脑' },
+  { no: '5', name: '证据强制', what: '每个关键结论必须挂上可点回原文的依据，无依据不进报告', out: '证据锚点直达' },
+  { no: '6', name: '判断卡', what: '重要判断写成标准卡片：证据、备选假设、置信度、认错条件', out: '结构化判断资产' },
+  { no: '7', name: '红队答辩预演', what: '上会前被系统问倒一次，输出"会被问什么"＋ 怎么答 ＋ 依据在哪页', out: '提前备弹药' },
+  { no: '8', name: '变更重审', what: '新材料进来，自动列出受影响的旧判断与方案段落', out: '影响清单与提醒' },
+  { no: '9', name: '规律沉淀', what: '跨项目提炼风险模式与管理原则，形成持续生长的判断模式库', out: '判断模式库' },
+];
+
+const disciplines = [
+  { no: '1', name: '无依据，不进报告', body: '找不到证据的论断强制标"待验证"，不允许伪装成事实。赶工期时人也会把"我觉得"写成"数据显示"——把职业操守变成系统强制，报告质量不再依赖每个人每天的自律。' },
+  { no: '2', name: 'AI 起草，人拍板', body: 'AI 无权写入任何正式记录，所有入账必须经人工审核。这不是技术不足，是刻意设计：大模型会幻觉，写诗无伤大雅，进决策依据是灾难。' },
+  { no: '3', name: '账本只增不涂改', body: '追加式版本记录，如会计的红字冲销。组织记忆最大的敌人不是遗忘，而是无痕改写——事后大家对"当时为什么这么定"各执一词。' },
+];
+
+const results = [
+  { label: '启动成本', value: '↓ 约 70%', body: '20 个部门的杂乱材料提纯：传统 3 人 × 2 周 → 系统处理 ＋ 我 1 人确认 × 2 天。' },
+  { label: '汇报回炉率', value: '↓ 约 80%', body: '红队答辩前置，方案一次性通过，避免"被问倒 → 推倒重来 → 多部门拉扯一个月"。' },
+  { label: '离职断档成本', value: '≈ 0', body: '接手同类项目从约 4 周（泡材料、对口径）→ 约 3 天（直接读决策账本的演化路径）。' },
+];
+
+const cardGrounds = [
+  { no: '1.', text: '45 人高度复用，并入总部后因职能竖井将刚性索要 30 余个编制，编制不降反升。' },
+  { no: '2.', text: '丧失高新资质与税收优惠，经济性显著下降。' },
+  { no: '3.', text: '回购并表是中长期根本，设置双轨过渡可控。' },
+];
+
+const cases = (await getCollection('cases', (e: any) => !e.data.draft)).sort(
+  (a: any, b: any) => a.data.order - b.data.order,
+);
 ---
 
 <BaseLayout
   title="工作方法"
   active="method"
-  description="一个人在复杂项目里摸索出的判断工作方法——如何把材料、经验和大模型能力，组织成一条可追溯、可验证、可持续演化的判断生产线。"
+  description="我在真实咨询项目中构建并全程使用的判断与方案生产系统。"
 >
-  <!-- 页首：主张 + 双翼定位 -->
-  <section class="wrap section">
-    <span class="kicker">一套判断的工作方法</span>
-    <h1 class="h2">把杂乱信息，炼成可信的判断。</h1>
-    <div class="prose" style="margin-top: var(--leading);">
-      <p class="lead">让复杂项目的每个关键结论，都有依据、经得起追问、能够持续更新。</p>
-      <p>
-        这是我在复杂项目里摸索出的一套判断工作方法——让每个判断可追溯、可验证、可持续演化。这个站是我的工作笔记，记的是方法本身：不是宣传它能做什么，而是记录它长什么样、怎么运转、在真实项目里跑出过什么结果。
-      </p>
-      <blockquote>
-        这套方法背后的理论推演——为什么「判断」会在 AI 时代变得比「知道」更稀缺——见
-        <a href="/research/">研究与判断</a>。
+  <article class="method">
+    <!-- 第一段 · 开篇立论 -->
+    <section class="wrap m-open">
+      <p class="kicker">工作方法</p>
+      <h1 class="display">决策账本</h1>
+      <p class="m-sub">我在真实咨询项目中构建并全程使用的判断与方案生产系统</p>
+
+      <blockquote class="m-quote">
+        企业对钱的管理有账本——每笔支出有凭证、能审计。比钱更贵的重大决策，也应该有一本账。
       </blockquote>
-    </div>
-  </section>
 
-  <!-- 名字就是说明书 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">这套方法要做的四件事</span>
-    <div class="prose">
-      <p>这套方法要做的，可以拆成四件事：</p>
-
-      <p>
-        <strong>明 · Transparency · 看得见的来路</strong><br />
-        每条结论都能一路回看到原始材料的那一段话。不是「系统说的」，而是「出自哪份访谈的第几段」。→ 可追溯
-      </p>
-      <p>
-        <strong>鉴 · Examination · 主动的审视</strong><br />
-        鉴别、复核、交叉验证。检索不到依据就标「待验证」；定稿前先被最刁钻的追问打一遍。→ 可验证
-      </p>
-      <p>
-        <strong>印 · Attestation · 鉴亦为凭，印信为据</strong><br />
-        印鉴是古时的凭证。判断入册需人签核，账本追加式记录、旧版本不删——今天的凭据，就是三年后的说明书。→ 可问责
-      </p>
-      <p>
-        <strong>照 · Scrutiny · 请您查证</strong><br />
-        这句旧话正是我想要的姿态：把依据摊开，请您当场核。被追问不再是风险，而是最有准备的时刻。→ 经得起质询
+      <p class="copy m-lede">
+        这不是一个产品介绍——这是我的工作方法：让我经手的每个关键结论，都变成组织可积累、可追溯、可更新的系统资产。
       </p>
 
-      <p>这套方法内部分四个部分运转，分别对应判断生产线的四道关口：</p>
-      <ul>
-        <li><strong>Research</strong>——研究与调研：材料入库、事实提纯、问题地图</li>
-        <li><strong>Studio</strong>——方案生产：判断卡、红队答辩、答辩预案</li>
-        <li><strong>Memory</strong>——组织记忆：判断模式库、经验的复利</li>
-        <li><strong>Ledger</strong>——决策依据账本：追加式版本记录与证据锚点</li>
-      </ul>
-      <p>四个名字标示的是同一条判断生产线的四个部分，不是四个独立产品。</p>
-    </div>
-  </section>
-
-  <!-- 五项隐性成本 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">这五项成本，不在预算表上，但一直在付</span>
-    <div class="prose">
-      <p>
-        复杂项目里最贵的从来不是写报告的工时，而是判断没有账本时反复付出的代价。这是我在真实项目里反复撞见的五项隐性成本：
-      </p>
-      <p>
-        <strong>01 · 材料整理压在人头上</strong><br />
-        几十份杂乱材料的提纯，传统模式下要靠人力硬啃几周；项目还没开始判断，人力已经烧掉一轮。
-      </p>
-      <p>
-        <strong>02 · 汇报被问倒，方案回炉</strong><br />
-        台下一个问题现场答不上来，整个方案的可信度当场崩塌——「汇报被问倒 → 方案推倒重来 → 多部门重新拉扯」，往往以月计。
-      </p>
-      <p>
-        <strong>03 · 依据找不回来</strong><br />
-        半年后有人问「这条当初怎么定的」，只能翻纪要、打电话找已经不在这个项目里的人；为什么撤这个部门、谁提过反对意见，渐渐没人说得清。
-      </p>
-      <p>
-        <strong>04 · 结论悄悄过期</strong><br />
-        三周前的判断，建立在一个已经被新材料推翻的前提上，但没人记得这层依赖。人脑不擅长维护几百条结论之间的关系。
-      </p>
-      <p>
-        <strong>05 · 经验随人蒸发</strong><br />
-        核心成员一旦离开，他脑子里对业务、对组织、对「哪些诉求是真的」的手感一并带走；新人接手一个跑了半年的项目，常常要泡上数周材料才找到感觉。
-      </p>
-    </div>
-  </section>
-
-  <!-- AI 越强，判断越贵 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">AI 越强，判断越贵</span>
-    <div class="prose">
-      <p>
-        AI 生成的选项越多、速度越快，「选哪个、为什么、谁负责」的决策压力就越大。执行力每扩容一次，判断力就升值一次。押注判断，是押注一条只涨不跌的曲线。
-      </p>
-      <p>
-        这背后是一次稀缺性的搬家。<strong>第一站，信息稀缺的时代</strong
-        >——懂外语、有资料、消息灵通就值钱，「知识就是力量」是字面意义的真理。<strong
-          >第二站，互联网时代</strong
-        >——信息免费了，稀缺变成注意力和「会搜索、会整合」的能力，善用信息的知识工人取代了「记得多」的旧文人。<strong
-          >第三站，就是现在</strong
-        >——检索、整合、分析变成聊天框里三十秒的免费输出，稀缺性再次向上游搬家，搬到了 AI
-        能力终止的地方：在不确定中做出选择、并为之负责。
-      </p>
-      <p>
-        判断，拆开看，等于预测 × 权衡 × 担责。<strong>预测</strong>（对局势的分析推演）AI
-        可以做，甚至做得更好；<strong>权衡</strong
-        >（在利润与风险、短期与长期之间说出「这个更重要」）需要立场和取舍，不存在于任何训练数据里；<strong
-          >担责</strong
-        >（用自己的位子、声誉为选择的后果买单）——AI
-        没有可被问责的身份，删除一个模型不构成惩罚。它给出的建议本质上都是无担保的认知支票，而兑现支票的签名，必须由人来签。
-      </p>
-      <p>
-        这背后其实是一次两百年一遇的对称。工业革命的本质不是发明了几台机器，而是把人类的体力变成了基础设施——蒸汽机和电力让「力气」从人身上剥离出来，变成随处可得的公共资源，靠出卖力气吃饭的劳动随之贬值，人转而去做机器做不了的事：控制机器、设计流程、组织生产。今天完全相同的过程正在认知领域重演——大模型正在把检索、归纳、翻译、写作、初步分析这类「执行型脑力」从人身上剥离出来，变成按
-        token
-        计价的公共资源。凡是能被写成流程、模板和规则的认知工作，成本正在不可逆地趋近于零；没被写进去的那部分——在不确定中做选择、并承担后果——正在变得更贵。
-      </p>
-    </div>
-  </section>
-
-  <!-- 一个母定义，三个机制 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">这套方法是什么：一个母定义，三个机制</span>
-    <div class="prose">
-      <p>
-        这是我在复杂项目里摸索出的一套判断工作方法。它把分散的材料、专家经验和大模型能力组织成一条生产线，产出有依据、经得起质疑、能够持续更新的判断和解决方案。
-      </p>
-      <p>三个核心机制支撑这个定义——它们不是三个功能，而是同一条生产线上不可跳过的三道工序：</p>
-      <p>
-        <strong>决策依据账本</strong><br />
-        每个重要结论记账入册，凭证（原始材料）可查；账本采用追加式版本记录——旧版本保留，修改通过新条目覆盖或标注失效，所有变更保留完整历史轨迹。
-      </p>
-      <p>
-        <strong>证据驱动判断</strong><br />
-        回答任何实质性问题、生成任何方案段落之前，先强制检索证据；检索不到依据的论断强制标注「待验证」，不允许伪装成事实混进报告。
-      </p>
-      <p>
-        <strong>方案压力测试</strong><br />
-        方案定稿前，先扮演「最刁钻的领导」从反方立场连环质疑；答不圆的地方回炉补证，并生成答辩预案——上会前先被问倒一次。
-      </p>
-      <p>
-        它不是聊天机器人——是嵌入我工作流程的一条生产线，不是一个问答窗口；不是写作工具——写报告只是最后一道工序，且只允许基于通过检查的判断来写；不是网盘或知识库——知识库存放「名词」，它管理「判断」：活的、有置信度、会演化、能作废；也不取代我作为顾问该做的裁决——恰恰相反，它把我从翻材料、对口径、凭记忆答辩里解放出来，让我专注在只有我能做的那部分：拍板。
-      </p>
-    </div>
-  </section>
-
-  <!-- 九个环节 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">判断生产线：九个环节，不可跳步</span>
-    <div class="prose">
-      <p>
-        原始材料进来，可被追问的判断出去。访谈录音、会议纪要、报表、制度文件、领导讲话——从原料到结论，每一步都有质检、有留痕、有责任人。
-      </p>
-
-      <p>
-        <strong>01 原料提纯——杂料变净料，每条信息带出处</strong><br />
-        录音、冗长文件、口水话纪要，先经过清洗和结构化——去噪、分类、拆条，并给每条信息标注来源。把一堆原始材料直接丢给大模型，等于让一位顶级律师直接翻你的杂物间——聪明是聪明，但案卷没整理，辩护词必然漏洞百出。先整理卷宗，再请律师出庭。<br />
-        <em>我得到什么</em
-        >：几十份杂乱材料在几天内变成一份「每条信息都有出处」的事实底稿。实测参考：单份 3
-        小时访谈，稳定提取 21 条唯一决策、35 条唯一冲突，逐条可回溯原文段落。
-      </p>
-      <p>
-        <strong>02 人工质检闸门——AI 起草，人批准，方可入账</strong><br />
-        AI 提纯出的每一批内容——事实、决策、冲突——必须经我审核确认后，才能进入正式账本。AI
-        无权直接写入任何正式记录。市面上的全自动方案在赌「模型不出错」；我不赌——进账本的每一个字都有人负责过。<br
-        />
-        <em>我得到什么</em>：一个可以放心引用的底座。调出的任何依据，都敢直接写进正式报告，因为它入库时被人确认过。
-      </p>
-      <p>
-        <strong>03 决策依据账本——追加式版本记录的组织记忆</strong><br />
-        所有经过确认的内容进入主账本，条目可以被后来的判断更新、标注失效、记录演化路径，旧版本始终保留——如同会计账目，更正靠红字冲销，而不是撕掉重写。<br
-        />
-        <em>我得到什么</em>：半年后有人问「这条当初怎么定的」，我打开账本，而不是打电话找已经不在项目里的人。
-      </p>
-      <p>
-        <strong>04 双脑协同——夜班研究员消化，白班专家推理</strong><br />
-        系统里有两个分工不同的 AI 脑：理解脑像夜班研究员，7×24
-        小时在后台消化材料、维护索引，不做任何决策；生成脑像白班专家，处理具体任务时调取理解脑整理好的记忆做推理。让一个
-        AI
-        既管记忆又管推理，等于让一个人边整理档案室边出庭辩护——两头都做不好。分成两个脑，交互有契约：生成脑只能读账本、不能改写；理解脑只能起草入账、批准权在人。错误没有藏身之处的结构性原因就在这里。<br
-        />
-        <em>我得到什么</em>：一个「永远在岗」的研究团队。晚上丢进去三份访谈，第二天早上项目记忆已经更新完毕。
-      </p>
-      <p>
-        <strong>05 证据强制——无依据，不进报告</strong><br />
-        回答任何实质性问题、生成任何方案段落之前，强制先检索证据；每个关键结论必须挂上可以点回原文的依据。<br
-        />
-        <em>我得到什么</em>：被追问时的姿态从「容我回去查查」变成「您看，这是访谈原文」。实测参考：证据检索在自建评估集上
-        Recall@5 = 1.00（前 5 条检索结果必含正确依据），索引覆盖近两百份材料。
-      </p>
-      <p>
-        <strong>06 判断卡——把「拍脑袋」变成可检验的结构</strong><br />
-        每个重要判断被写成一张标准结构的卡片，强制包含：结论是什么、支持它的证据、并行的其他解释、当前押哪个、置信度多少、这个判断最脆弱的假设是什么、出现什么信号就该认错改判。区分「专家」和「专业」的标志，不是结论多正确，而是是否预先声明了自己可能错在哪。<br
-        />
-        <em>我得到什么</em>：讨论不再是「我感觉」对撞「我认为」，而是两张摊开的判断卡：各自的证据、各自的脆弱点、各自的认错条件。只对高冲突、高风险的议题建卡，一张卡
-        5–10 分钟。
-      </p>
-      <p>
-        <strong>07 红队与答辩预演——上会前，先被问倒一次</strong><br />
-        方案定稿前，扮演「最刁钻的领导」，基于账本里的全部材料从反方立场连环质疑：为什么这么定？依据充分吗？另一种方案为什么不行？同时生成答辩预案。所有做过重大汇报的人都懂那个噩梦——台下一个问题现场答不上来。让系统当第一个敌人，在没有代价的地方先失败一次，代价高的地方才能赢。<br
-        />
-        <em>我得到什么</em>：走进会议室之前，最坏的问题已经听过、答过、备好了弹药。
-      </p>
-      <p>
-        <strong>08 变更重审——新材料进来，旧结论自动待检</strong><br />
-        新增一份访谈、一组数据、一个表态后，识别它冲击了哪些既有判断，列出「受影响判断 →
-        受影响方案段落」清单。复杂项目里最隐蔽的错误是「结论过期」——三周前的判断建立在一个已被新材料推翻的前提上，但没人记得这层依赖。<br
-        />
-        <em>我得到什么</em>：改方案不再是凭感觉「通读一遍看看哪里要动」，而是拿着一张精确的重审清单。
-      </p>
-      <p>
-        <strong>09 规律沉淀——项目经验变成可复用的判断模式</strong><br />
-        定期从积累的决策与冲突中提炼跨项目的规律——反复出现的风险模式、被验证有效的原则、特定组织的决策偏好——形成一份持续生长的判断模式库。每条模式都带着适用条件、已知反例、失效条件、最近一次验证时间。这不是绝对真理的清单，而是带条件、可作废的经验规则集。<br
-        />
-        <em>我得到什么</em>：经验第一次有了复利。第 10 个项目不是第 1 个项目的重复，而是站在前 9
-        个项目的全部判断之上。
-      </p>
-    </div>
-  </section>
-
-  <!-- 一张判断卡长这样 -->
-  <section class="dark">
-    <div class="wrap section">
-      <span class="kicker">一张判断卡，长这样</span>
-      <h2 class="h2">判断卡强制分开三样东西：事实、观点、判断。</h2>
-      <p class="copy" style="margin-top: var(--leading);">
-        判断卡强制分开三样通常混在一起的东西：事实（可核对）、观点（谁主张）、判断（基于什么押注）。以下是一张真实案例中的卡片节选（已脱敏）。
-      </p>
-      <div style="margin-top: calc(1.6 * var(--leading));">
-        <JudgmentCard card={sampleCard} />
+      <div class="m-reads">
+        <p class="m-label">先读这两篇</p>
+        <a class="m-read" href="/notes/judgment-never-capitalized/">
+          <span class="rt">组织咨询的最大浪费：判断没有资产化</span>
+          <span class="rk">为什么要建这套</span>
+          <p class="rd">项目结项留下两三百页方案，推理过程、被否掉的备选、当时的权衡全部蒸发。这不是效率损失，是资产流失——前者让人想到再抓紧一点，后者才让人想到改记账方式。</p>
+        </a>
+        <a class="m-read" href="/method/cases/ai-workflow/">
+          <span class="rt">AI 咨询工作流：这套工序在我自己手上怎么跑</span>
+          <span class="rk">深读</span>
+          <p class="rd">下面九道工序的逐步展开：每一步实际用什么、人工闸门卡在哪里、哪些环节反复失败过又改成了现在的样子。不是案例，是这套方法本身的操作说明。</p>
+        </a>
       </div>
-    </div>
-  </section>
 
-  <!-- 它在真实项目里跑过 -->
-  <section class="wrap section">
-    <span class="kicker">它在真实项目里跑过</span>
-    <h2 class="h2">三个案例，各一段摘要。</h2>
-    <div class="grid-2">
-      <a class="case-card" href="/method/cases/xinglan/">
-        <p class="t">星澜传媒重整</p>
-        <dl>
-          <div>
-            <dt>问题一句话</dt>
-            <dd>客户要的是常规的「定岗定编」三定方案。</dd>
+      <p class="m-source">
+        源自 <b>22</b> 个部门 ＋ <b>5</b> 个子公司集团总部组织改革项目（我方负责 <b>11</b> 个部门 ＋ <b>3</b> 个子公司）。
+      </p>
+    </section>
+
+    <section class="wrap m-block">
+      <h2 class="m-h2">为什么围绕"判断"而不是"写材料"来建系统</h2>
+      <p class="copy m-p">
+        检索、归纳、写作、文书编制，正在变成大模型三十秒的廉价输出。真正稀缺的，搬到了 AI 能力终止的地方——在不确定中做出选择、并为之负责。<strong>这就是判断。</strong>
+      </p>
+
+      <p class="m-formula">判断 ＝ 预测 <i>×</i> 权衡 <i>×</i> 担责</p>
+
+      <div class="m-grid3 sub3">
+        {
+          judgmentParts.map((j) => (
+            <div class="cell">
+              <span class="cname">{j.name}</span>
+              <span class="cgloss">{j.gloss}</span>
+              <span class="cverdict">{j.verdict}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="copy m-p">
+        所以我让 AI 承包一切执行型脑力，把人的时间全部留给判断——<strong>这是整套系统唯一的设计原则。</strong>
+      </p>
+    </section>
+
+    <!-- 第二段 · 为什么要建这套系统 -->
+    <section class="wrap m-block">
+      <h2 class="m-h2">这个项目开始时，我面对的是什么</h2>
+      <div class="m-rows">
+        {
+          pains.map((p) => (
+            <div class="row">
+              <span class="rn">{p.no}</span>
+              <span class="rname">{p.title}</span>
+              <p class="rbody">{p.body}</p>
+            </div>
+          ))
+        }
+      </div>
+      <p class="copy m-p"><strong>我的选择</strong>：不靠加班硬扛，而是把工作方法本身系统化——边做项目，边把这套系统建了出来。</p>
+    </section>
+
+    <section class="wrap m-block">
+      <h2 class="m-h2">「决策账本」是什么</h2>
+      <div class="m-def">
+        <p class="dt">面向复杂项目的企业判断与方案生产系统。</p>
+        <p class="dd">把分散的材料、专家经验和大模型能力组织成一条生产线，产出有依据、经得起质疑、能够持续更新的判断和解决方案。</p>
+      </div>
+
+      <p class="m-label">三个核心机制</p>
+      <div class="m-grid3 sub2">
+        {
+          mechanisms.map((m) => (
+            <div class="cell">
+              <span class="cname">{m.name}</span>
+              <div class="clist">
+                {m.points.map((pt) => (
+                  <p><span class="dot">·</span><span>{pt}</span></p>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="m-label">它不是</p>
+      <div class="m-grid4">
+        {
+          notThese.map((n) => (
+            <div class="cell">
+              <span class="cname sm">{n.what}</span>
+              <span class="cgloss">{n.why}</span>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 第三段 · 六个侧面 -->
+    <section class="wrap m-block">
+      <h2 class="m-h2">同一个系统的六个侧面（不是六个产品）</h2>
+      <p class="copy m-p"><strong>一个目标</strong>：让复杂项目的每个关键结论，都有依据、经得起追问、能够持续更新。</p>
+      <div class="m-grid3 sub2">
+        {
+          facets.map((f) => (
+            <div class="cell">
+              <span class="cnum-name">
+                <span class="cnum">{f.no}</span>
+                <span class="cname">{f.name}</span>
+              </span>
+              <p class="cbody">{f.body}</p>
+            </div>
+          ))
+        }
+      </div>
+      <p class="copy m-p">六个侧面，指向同一个结果：把组织的判断力，变成<strong>可复制、可传承、可进化</strong>的核心资产。</p>
+    </section>
+
+    <!-- 第四段 · 九个环节 -->
+    <section class="wrap m-block">
+      <h2 class="m-h2">系统怎么工作：一条判断生产线</h2>
+      <p class="copy m-p">从杂乱材料到组织判断资产：九个环节，不可跳步。</p>
+
+      <div class="m-pipe">
+        <div class="phead">
+          <span>环节</span><span>名称</span><span>做什么</span><span>产出物</span>
+        </div>
+        {
+          pipeline.map((p) => (
+            <div class="prow">
+              <span class="pno">{p.no}</span>
+              <span class="pname">{p.name}</span>
+              <span class="pwhat">{p.what}</span>
+              <span class="pout">{p.out}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="m-out">
+        <div>
+          <p class="m-label">输出</p>
+          <p class="obig">可防守的方案　＋　可传承的判断资产</p>
+        </div>
+        <p class="onote">每一步都有"质检闸门"与"留痕规则"，确保结果可信、可追溯、可传承。</p>
+      </div>
+    </section>
+
+    <!-- 第五段 · 三条纪律 -->
+    <section class="wrap m-block">
+      <h2 class="m-h2">这套系统值钱，不在功能多，在三条纪律</h2>
+      <div class="m-rows big">
+        {
+          disciplines.map((d) => (
+            <div class="row">
+              <span class="rn">{d.no}</span>
+              <span class="rname">{d.name}</span>
+              <p class="rbody">{d.body}</p>
+            </div>
+          ))
+        }
+      </div>
+      <p class="m-punch">市面方案在赌"模型不出错"。我们不赌。</p>
+      <div class="m-note-gold">
+        <p>第三条同样用在我自己身上。<a href="/research/ledger/">公开判断记录</a>里的每一次改判都只追加、不删改——包括被自己的数据部分证伪的那一次。</p>
+      </div>
+    </section>
+
+    <!-- 第六段 · 实测结果 -->
+    <section class="wrap m-block">
+      <h2 class="m-h2">这套方法在我负责的项目里，实测拿到的结果</h2>
+      <p class="copy m-p">
+        22 个总部部门 ＋ 5 个子公司的集团总部组织改革项目，我方负责 11 个部门 ＋ 3 家子公司——系统由我构建，并全程支撑材料入库、判断管理与方案生成。
+      </p>
+
+      <div class="m-grid3 sub3">
+        {
+          results.map((r) => (
+            <div class="cell">
+              <span class="cname sm">{r.label}</span>
+              <span class="cstat">{r.value}</span>
+              <span class="cgloss">{r.body}</span>
+            </div>
+          ))
+        }
+      </div>
+      <p class="m-source">
+        <strong>底层实测支撑</strong>：单份 3 小时访谈，稳定提取 21 条决策、35 条冲突，逐条可溯源；任一历史结论的依据，检索即得。
+      </p>
+    </section>
+
+    <section class="wrap m-block">
+      <h2 class="m-h2 sm">红队对话实录（脱敏）</h2>
+      <p class="copy m-p">上会前我做这样的"问倒"十八次，逐一修补；最终方案一次性高票通过决策会。</p>
+
+      <div class="m-red">
+        <div>
+          <p class="rlabel red">红队 · AI 扮演最挑剔的高层</p>
+          <div class="rbox red">
+            <p>股权被质押、工商重组受限，方案凭什么还把'全资回购'作为第一推荐？这不是画饼吗？</p>
           </div>
-          <div>
-            <dt>最意外的发现</dt>
-            <dd>
-              账本把零散冲突聚类标红后，暴露出真问题不是「岗位怎么切」，而是「这家公司与母公司的治理关系怎么摆」——不先回答治理问题，任何定岗方案都会返工。
-            </dd>
+        </div>
+        <div class="answer">
+          <p class="rlabel">依据账本生成的应答</p>
+          <div class="rbox gold">
+            <p>回购是中长期根本，方案设置双轨过渡：工商解锁前按公允定价签服务协议；质押一解除，立即回购并表。</p>
+            <p class="anchor">证据锚点 · 事实账本</p>
           </div>
-        </dl>
-        <span class="go">完整案例 →</span>
-      </a>
+        </div>
+      </div>
+      <p class="m-source">完整脱敏实录《星澜传媒重整项目》可深入交流。</p>
+    </section>
 
-      <a class="case-card" href="/method/cases/ai-workflow/">
-        <p class="t">AI 咨询工作流</p>
-        <dl>
-          <div>
-            <dt>问题一句话</dt>
-            <dd>
-              一个大项目跑三个月、经手上百份材料，消化完之后去了哪里？老实说：去了我的脑子，和几十份散落的文档。
-            </dd>
+    <section class="wrap m-block">
+      <h2 class="m-h2 sm">它长什么样：一张判断卡</h2>
+      <p class="copy m-p">判断卡就是一份人人能读的文档，写清押注、依据和认错条件。使用者无需任何技术背景。</p>
+
+      <div class="m-card">
+        <p class="cf">判断卡 · 星澜传媒何去何从</p>
+        <div class="kv">
+          <div class="k">当前押注</div>
+          <div class="v"><strong>模式三：回购并表</strong></div>
+          <div class="k">置信度</div>
+          <div class="v">
+            <span class="conf">
+              <span class="val">0.70</span>
+              <span class="bar"><i style="width:70%"></i></span>
+            </span>
           </div>
-          <div>
-            <dt>最意外的发现</dt>
-            <dd>
-              卡住的从来不是「处理」，是「沉淀」——要改造的不是工具，是工序。现在这条产线上：全局决策账本
-              900 余条、冲突地图近 2000 条，逐条带出处。
-            </dd>
+          <div class="k">主要依据</div>
+          <div class="v">
+            <ul>
+              {cardGrounds.map((g) => <li>{g.text}<span class="anchor">证据锚点 → 事实账本</span></li>)}
+            </ul>
           </div>
-        </dl>
-        <span class="go">完整案例 →</span>
-      </a>
-    </div>
-    <p class="copy" style="margin-top: var(--leading); font-size: 14px;">
-      第三个案例（集团总部三定）脱敏成本最高，通过单独一轮脱敏审查后上线。
-    </p>
-  </section>
+          <div class="k">失效触发器</div>
+          <div class="v"><span class="risk">股权质押半年内无法解除则改判模式一。</span></div>
+        </div>
+      </div>
+      <p class="m-source">
+        当前系统以文档账本 ＋ 后台引擎形态稳定运行，以上为真实工作形态示意；可视化操作界面为交付形态，随首批客户项目完成封装。
+      </p>
+      <p class="copy m-p last">这套系统是我为把项目做好而建的工具，不是我要出售的产品。</p>
+    </section>
 
-  <!-- 星澜三切片 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">深度展示：星澜传媒重整的三个切片</span>
-    <div class="prose">
-      <blockquote>
-        <p>脱敏声明：以下内容取自一个真实项目，公司名虚构、数字降精度处理，但保留真实的工序与推导结构。</p>
-        <p style="margin-top: var(--half);">
-          背景一句话：星澜传媒——混合所有制内容运营商，收入几乎全部依赖母公司华信广电，却因外部股东持股而无法被行政穿透管控；薪酬约为母公司两倍，历史「谈判降薪」遗留深刻信任裂痕。母公司决定重整，项目全程用这套方法支撑。
-        </p>
-      </blockquote>
-
-      <h3 class="h3">切片一 · 问题重构：客户要的是「定岗定编」，账本暴露的是「治理错配」</h3>
-      <p>
-        客户最初的诉求是常规三定：定职责、定岗位、定编制。但材料入账后，问题地图把零散冲突聚类标红：人工成本占收入约三成、股权回购有流程障碍、多元股权导致行政穿透极难——真问题不是「岗位怎么切」，而是「这家公司与母公司的治理关系怎么摆」。不先回答治理问题，任何定岗方案都会返工。识别「客户说的问题」与「真实问题」的差距，是这份工作里最见功力的一步；这套方法把这个功力变成了一道可检查、可复现的工序。
-      </p>
-
-      <h3 class="h3">切片二 · 一张真实的判断卡</h3>
-      <p>
-        针对「星澜向何处去」的三条路线（模式一：保留法人公允定价 / 模式二：业务收回总部 /
-        模式三：全资回购并表），判断卡长这样——它同时是公开判断账本上的
-        <a href="/research/ledger/#card-CS-XINGLAN-01">CS-XINGLAN-01</a>：
-      </p>
-    </div>
-  </section>
-
-  <section class="dark">
-    <div class="wrap section-tight" style="padding-bottom: calc(2.4 * var(--leading));">
-      <JudgmentCard id="CS-XINGLAN-01" />
-      <p class="copy" style="margin-top: var(--leading);">
-        押注有依据、最诱人的备选被压力测试否决、认错条件写在卡上——这就是「判断」与「拍脑袋」的区别。
-      </p>
-    </div>
-  </section>
-
-  <section class="wrap section">
-    <div class="prose">
-      <h3 class="h3">切片三 · 一段红队对话实录</h3>
-      <blockquote>
-        <p>
-          <strong>红队（扮演最挑剔的高层）</strong
-          >：「既然股权被质押、工商重组受限，方案凭什么还把『全资回购』作为第一推荐？这不是画饼吗？」
-        </p>
-        <p style="margin-top: var(--half);">
-          <strong>依据账本生成的应答</strong
-          >：「回购是中长期根本，但方案设置了双轨过渡：工商解锁前按公允定价签服务协议；质押一解除，立即回购并表、套改薪酬。」（证据锚点：事实账本·股权质押处理障碍实录）
-        </p>
-      </blockquote>
-      <p>
-        汇报人上会前被这样「问倒」了十几次，逐一修补防守薄弱点——最终方案一次性高票通过决策会。在没有代价的地方先失败，代价高的地方才能赢。
-      </p>
-    </div>
-  </section>
-
-  <!-- 四类场景 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">这套方法在四类场景下意味着什么</span>
-    <div class="prose">
-      <p>同一套判断工作方法，放进不同类型的组织里，含义并不相同。</p>
-      <p>
-        <strong>对企业战略部 / 组织发展部而言</strong
-        >——这类部门的常态是：长期项目、海量会议、多部门利益冲突、领导意见反复调整，最后所有口径压在两三个骨干身上。把判断记账，意味着部门的角色会从「材料的搬运工」变成「判断的生产者」：材料入库不再依赖个人记忆整理，重大议题有据可查，骨干休假、轮岗、离职不再天然引发断档。
-      </p>
-      <p>
-        <strong>对企业高管 / 决策层而言</strong
-        >——每天签发的决策，依据往往分散在下属的口头汇报里；半年后复盘，常常没人能完整还原「当时为什么这么定」。把判断当账本记，意味着决策的依据、备选方案、反对意见、拍板理由第一次有处可查——决策质量从一种凭印象的评价，变成一个可回溯、可审计的对象。
-      </p>
-      <p>
-        <strong>对咨询公司 / 专业服务机构而言</strong
-        >——交付质量长期依赖明星顾问的个人状态，项目结束经验大多蒸发；客户也越来越常追问「结论的依据是什么」。如果方案基于判断卡生成，交付物自带证据链、答辩预案随方案同时产出，意味着交付质量从「靠人」变成「靠工艺」——跨项目积累的，不再只是案例名单，而是可复用的方法资产。
-      </p>
-      <p>
-        <strong>对智库 / 政策研究机构而言</strong
-        >——课题周期长、材料浩繁、观点交锋激烈，成果的公信力最终取决于论证链条是否扎实、能否经得起同行和决策部门的质询。核心论点若以判断卡呈现——带反方观点与置信度——意味着研究结论的每一环都有处溯源，多人协作的大课题，口径也第一次有了统一的记录基础。
-      </p>
-    </div>
-  </section>
-
-  <!-- 数字 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">数字，可查、可追、可复核</span>
-    <div class="prose">
-      <p>
-        数字像账本上的金额：可查、可追、可复核。以下取自这套方法目前支撑的一个母项目——22
-        个总部部门的大型集团组织改革项目——此刻的真实运行状态（已降精度）：
-      </p>
-      <ul>
-        <li><strong>一百多份</strong>原始材料完成消化入库，证据索引覆盖近两百份材料、上万个文本片段</li>
-        <li>全局决策账本 <strong>900 余条</strong>，冲突地图<strong>近 2000 条</strong>，逐条带来源出处</li>
-        <li>
-          判断卡<strong>十来张</strong>，演化记录<strong>十条</strong>，核心判断压缩到<strong>七条</strong
-          >（制度上限十条，超了必须合并或降级）
-        </li>
-        <li>
-          最近一次全量证据体检：覆盖 13 张判断卡、<strong>100 条证据锚点，有效 100 条、断链 0 条</strong>
-        </li>
-        <li>检索评估：<strong>Recall@5 = 1.00 / MRR = 0.84</strong>（自建评估集）</li>
-      </ul>
-      <p>
-        除了状态，还有三件实际发生的事：同等体量材料的提纯，从「数人数周」的经验预期压缩到<strong
-          >两天</strong
-        >（系统处理 + 1 人逐条确认）；方案在决策会上<strong>一次通过</strong
-        >；项目中途骨干顾问离职，接手人直接读账本与判断卡的演化路径，<strong>三天</strong>理清前因后果接着往下做。
-      </p>
-    </div>
-  </section>
-
-  <!-- 数据安全两条底线 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">关于数据安全：两条底线原则</span>
-    <div class="prose">
-      <p>底线原则只有两条，写进流程，不靠自觉。</p>
-      <p>
-        <strong>01 · 账本留在本地</strong><br />
-        账本与证据以本地文件 /
-        本地数据库形态存放，不依赖任何外部服务持有原始材料；项目之间账本彼此隔离，敏感场景可完全在内网离线运行。
-      </p>
-      <p>
-        <strong>02 · AI 只读，写入必经人工网关</strong><br />
-        AI
-        组件对正式账本只读；任何入账与修改都要经过人工确认这道闸门，并留下完整操作痕迹。这既是安全边界，也是判断质量的来源——机器起草，人负责。
-      </p>
-    </div>
-  </section>
-
-  <!-- 开放式收尾 -->
-  <section class="dark">
-    <div class="wrap section">
-      <p class="copy">如果一个人的判断，也这样生产、这样记账、这样传承——</p>
-      <p class="h2" style="margin-top: var(--leading);">三年后会是什么样？</p>
-    </div>
-  </section>
-
-  <!-- 页脚三段式的第一段：最近在想什么 -->
-  <section class="wrap section">
-    <span class="kicker">最近在想什么</span>
-    <NoteList limit={3} />
-  </section>
+    <!-- 案例 -->
+    <section class="wrap m-block">
+      <h2 class="m-h2 sm">它在真实项目里跑过</h2>
+      <div class="grid-2">
+        {
+          cases.map((c: any) => (
+            <a class="case-card" href={`/method/cases/${c.data.slug}/`}>
+              <p class="t">{c.data.title}</p>
+              <dl>
+                <div>
+                  <dt>这篇讲什么</dt>
+                  <dd>{c.data.summary}</dd>
+                </div>
+              </dl>
+              <span class="go">读全文 →</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </article>
 </BaseLayout>
+
+<style>
+  .method { padding-bottom: calc(2.4 * var(--leading)); }
+  .m-open { padding-block: calc(2 * var(--leading)) 0; }
+  .m-sub { margin: 20px 0 0; font-size: 19px; line-height: 1.85; color: var(--ink-70); max-width: 32em; }
+  .m-quote {
+    margin: 44px 0 0;
+    padding: 0 0 0 24px;
+    border-left: 3px solid var(--gold);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(21px, 2.2vw, 26px);
+    line-height: 1.75;
+    max-width: 26em;
+  }
+  .m-lede { margin-top: 36px; max-width: 36em; }
+  .m-p { margin-top: 26px; max-width: 38em; }
+  .m-p.last { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--divider); }
+  .m-label { margin: 0 0 16px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; color: var(--ink-55); }
+
+  .m-reads { margin-top: 40px; max-width: 46em; border-top: 2px solid var(--ink); }
+  .m-reads .m-label { margin: 14px 0 4px; }
+  .m-read {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 9em;
+    gap: 8px 28px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--divider);
+    text-decoration: none;
+    color: inherit;
+  }
+  .m-read:hover { background: var(--surface); }
+  .m-read .rt { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.5; }
+  .m-read:hover .rt { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .m-read .rk { justify-self: end; font-family: var(--font-mono); font-size: 12px; color: var(--ink-55); }
+  .m-read .rd { grid-column: 1; margin: 0; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); }
+
+  .m-source {
+    margin: 32px 0 0;
+    padding: 20px 0;
+    border-top: 1px solid var(--divider);
+    border-bottom: 1px solid var(--divider);
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--ink-70);
+    max-width: 48em;
+  }
+  .m-source b, .m-source strong { font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+
+  .m-block { margin-top: clamp(48px, 5vw, 72px); padding-top: clamp(40px, 4vw, 56px); border-top: 2px solid var(--ink); }
+  .m-h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 2.8vw, 34px); line-height: 1.35; letter-spacing: 0.02em; margin: 0; max-width: 24em; }
+  .m-h2.sm { font-size: clamp(24px, 2.6vw, 30px); }
+
+  .m-formula { margin: 44px 0 20px; font-family: var(--font-display); font-size: clamp(19px, 2vw, 24px); font-weight: 700; letter-spacing: 0.08em; }
+  .m-formula i { color: var(--ink-55); font-style: normal; }
+
+  .m-grid3, .m-grid4 { display: grid; gap: 1px; background: var(--divider); border: 1px solid var(--divider); margin-top: 32px; }
+  .m-grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .m-grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: auto auto; }
+  .m-grid3.sub2 .cell { grid-row: span 2; grid-template-rows: subgrid; }
+  .m-grid3.sub3 .cell { grid-row: span 3; grid-template-rows: subgrid; }
+  .m-grid4 .cell { grid-row: span 2; grid-template-rows: subgrid; background: var(--surface); }
+  .cell {
+    background: var(--paper);
+    padding: 28px 26px;
+    display: grid;
+    row-gap: 12px;
+    align-content: start;
+  }
+  .cell .cname { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: 0.02em; line-height: 1.4; }
+  .cell .cname.sm { font-size: 16px; font-weight: 600; letter-spacing: 0.04em; }
+  .cell .cgloss { font-size: 14.5px; line-height: 1.8; color: var(--ink-70); }
+  .cell .cverdict { margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--divider); font-size: 15.5px; line-height: 1.85; color: var(--ink-70); }
+  .cell .cnum-name { display: flex; align-items: baseline; gap: 14px; }
+  .cell .cnum { font-family: var(--font-mono); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cell .cbody { margin: 0; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); }
+  .cell .cstat { font-family: var(--font-mono); font-size: clamp(30px, 3.4vw, 42px); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .cell .clist { display: flex; flex-direction: column; gap: 10px; }
+  .cell .clist p { margin: 0; display: grid; grid-template-columns: 1.2em minmax(0, 1fr); font-size: 15.5px; line-height: 1.8; color: var(--ink-70); }
+  .cell .clist .dot { color: var(--ink-55); }
+
+  .m-rows { margin-top: 36px; border-top: 2px solid var(--ink); }
+  .m-rows .row {
+    display: grid;
+    grid-template-columns: 3.2em minmax(0, 1fr);
+    gap: 6px 28px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--divider);
+  }
+  .m-rows .rn { font-family: var(--font-mono); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; padding-top: 3px; }
+  .m-rows .rname { font-family: var(--font-display); font-size: 19px; font-weight: 600; line-height: 1.5; letter-spacing: 0.02em; }
+  .m-rows .rbody { grid-column: 2; margin: 0; font-size: 16px; line-height: 1.9; color: var(--ink-70); max-width: 44em; }
+  .m-rows.big .row { padding: 30px 0; gap: 14px 28px; }
+  .m-rows.big .rn { font-size: 22px; line-height: 1.2; padding-top: 0; }
+  .m-rows.big .rname { font-size: clamp(21px, 2.2vw, 26px); font-weight: 700; }
+
+  .m-def { margin-top: 28px; border-left: 3px solid var(--gold); padding: 2px 0 2px 24px; }
+  .m-def .dt { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(19px, 2vw, 23px); line-height: 1.65; max-width: 26em; }
+  .m-def .dd { margin: 14px 0 0; font-size: 16px; line-height: 1.9; color: var(--ink-70); max-width: 34em; }
+  .m-def + .m-label { margin-top: 44px; }
+  .m-grid3 + .m-label, .m-grid4 + .m-label { margin-top: 44px; }
+
+  .m-pipe { margin-top: 40px; border-top: 2px solid var(--ink); }
+  .m-pipe .phead, .m-pipe .prow {
+    display: grid;
+    grid-template-columns: 3.2em minmax(0, 1.05fr) minmax(0, 1.35fr) minmax(0, 0.8fr);
+    gap: 8px 28px;
+  }
+  .m-pipe .phead {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--divider);
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--ink-55);
+  }
+  .m-pipe .prow { padding: 22px 0; border-bottom: 1px solid var(--divider); align-items: baseline; }
+  .m-pipe .pno { font-family: var(--font-mono); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .m-pipe .pname { font-family: var(--font-display); font-size: 17px; font-weight: 600; line-height: 1.55; letter-spacing: 0.02em; }
+  .m-pipe .pwhat { font-size: 15.5px; line-height: 1.85; color: var(--ink-70); }
+  .m-pipe .pout { font-size: 14.5px; line-height: 1.8; color: var(--ink-70); }
+
+  .m-out { margin-top: 36px; padding-top: 28px; border-top: 2px solid var(--ink); display: flex; flex-wrap: wrap; gap: 24px 48px; align-items: baseline; }
+  .m-out .obig { margin: 12px 0 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(20px, 2.1vw, 26px); line-height: 1.5; }
+  .m-out .onote { margin: 0; flex: 1; min-width: 22em; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); }
+
+  .m-punch { margin: 32px 0 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(19px, 2vw, 24px); line-height: 1.6; }
+  .m-note-gold { margin-top: 36px; border-left: 3px solid var(--gold); padding: 2px 0 2px 20px; }
+  .m-note-gold p { margin: 0; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); max-width: 46em; }
+
+  .m-red { margin-top: 32px; display: flex; flex-direction: column; gap: 20px; max-width: 52em; }
+  .m-red .answer { padding-left: clamp(0px, 4vw, 56px); }
+  .m-red .rlabel { margin: 0 0 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: var(--ink-55); }
+  .m-red .rlabel.red { color: #8a3b3b; }
+  .m-red .rbox { padding: 20px 24px; background: var(--surface); }
+  .m-red .rbox p { margin: 0; font-size: 16.5px; line-height: 1.9; color: var(--ink); }
+  .m-red .rbox.red { border-left: 3px solid #8a3b3b; }
+  .m-red .rbox.gold { border: 1px solid var(--divider); border-left: 3px solid var(--gold); background: var(--paper); }
+  .m-red .anchor { margin-top: 12px; font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-55); }
+
+  .m-card { margin-top: 32px; max-width: 46em; background: var(--panel); border: 1px solid var(--hair); color: var(--ink-rev); padding: clamp(24px, 3vw, 36px); }
+  .m-card .cf {
+    margin: 0 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--hair);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--dim);
+  }
+  .m-card .v .anchor { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--gold); }
+
+  @media (max-width: 980px) {
+    .m-grid3 { grid-template-columns: 1fr; }
+    .m-grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .m-pipe .phead { display: none; }
+    .m-pipe .prow { grid-template-columns: 3.2em minmax(0, 1fr); }
+    .m-pipe .pwhat, .m-pipe .pout { grid-column: 2; }
+  }
+  @media (max-width: 620px) {
+    .m-grid4 { grid-template-columns: 1fr; }
+    .m-read { grid-template-columns: 1fr; }
+    .m-read .rk { justify-self: start; }
+  }
+</style>

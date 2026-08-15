@@ -1,68 +1,200 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import NoteList from '../../components/NoteList.astro';
+import { recentNotes } from '../../lib/notes';
+import { CARDS } from '../../data/cards';
 
-/**
- * 空房间规矩：只列背后已有真内容的方向。
- * 宏观与投资方向路径已在代码里预留，但不挂牌——各自出现第一篇真内容时再加一行。
- */
-const questions = [
+const entries = [
   {
-    label: '认知资本论',
-    q: '当知识获取和内容生产越来越便宜，什么能力会变得更稀缺？',
-    to: '/research/cognitive-capital/',
+    path: '/research/ledger/',
+    meta: `${CARDS.length} 张卡 · 定期复核`,
+    title: '公开判断记录',
+    desc: '带编号、置信度和失效条件的判断清单。改判只追加，不删改——包括被自己的数据部分证伪的那些。',
   },
   {
-    label: '公开判断账本',
-    q: '一个判断怎样才算合格：依据、置信度、失效条件、认错记录？',
-    to: '/research/ledger/',
+    path: '/research/cognitive-capital/',
+    meta: '约十二万字 · 公开写作中',
+    title: '认知资本论',
+    desc: '一本正在公开写作的书。三条公理与五部脉络先立在这里，章节随写随发。',
   },
 ];
+
+const changes = [
+  {
+    date: '2026-08-15',
+    delta: '新增 4 张',
+    note: '《认知资本论》三公理与两条推论首次立卡：0.88 / 0.74 / 0.70 / 0.75。',
+  },
+  {
+    date: '2026-08-09',
+    delta: '0.60 → 0.45',
+    note: 'JUG-TW-20260809-02 第一轮复核下调并标记 disputed：主机制被社保缴费数据顶住，暂停判定至 2027 年。',
+  },
+];
+
+/** 判断没有资产化那篇已移到 /method/ 开头，这里不重复挂 */
+const essays = (await recentNotes()).filter((n) => n.slug !== 'judgment-never-capitalized');
 ---
 
 <BaseLayout
   title="研究与判断"
   active="research"
-  description="我对 AI、组织与市场的长期判断，以及它们如何被现实修正。"
+  description="我对 AI、组织、商业与市场的长期观察，以及这些判断后来如何被现实验证或推翻。"
 >
-  <section class="wrap section">
-    <span class="kicker">研究与判断</span>
-    <h1 class="h2">我持续研究的问题。</h1>
-    <div class="list">
+  <section class="wrap r-open">
+    <p class="kicker">研究与判断</p>
+    <h1 class="r-h1">记录我对 AI、组织、商业与市场的长期观察，以及这些判断后来如何被现实验证或推翻。</h1>
+    <p class="r-lede">
+      这里的每一条判断都带编号、置信度和失效条件。改判只追加，不删改——你可以看到我在哪一天、因为什么证据改了主意。
+    </p>
+
+    <div class="r-entries">
       {
-        questions.map((x) => (
-          <a class="item" href={x.to}>
-            <span class="id">{x.label}</span>
-            <span class="it">{x.q}</span>
+        entries.map((e) => (
+          <a class="r-entry" href={e.path}>
+            <span class="etop">
+              <span class="epath">{e.path}</span>
+              <span class="emeta">{e.meta}</span>
+            </span>
+            <span class="etitle">{e.title}</span>
+            <span class="edesc">{e.desc}</span>
           </a>
+        ))
+      }
+    </div>
+
+    <div class="r-changes">
+      <p class="r-label">最新记录变动</p>
+      {
+        changes.map((c) => (
+          <div class="crow">
+            <span class="cdate">{c.date}</span>
+            <span class="cdelta">{c.delta}</span>
+            <span class="cnote">{c.note}</span>
+          </div>
         ))
       }
     </div>
   </section>
 
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <div class="grid-2">
-      <a class="tile" href="/research/cognitive-capital/">
-        <p class="t">认知资本论</p>
-        <p>旗舰研究。三条公理、五部脉络、两篇试读；约四万字手稿边写边公开。</p>
-        <span class="go">进入 →</span>
-      </a>
-      <a class="tile" href="/research/ledger/">
-        <p class="t">公开判断账本</p>
-        <p>提前公开、带失效条件、可被打脸的判断；问题 → 假设 → 判断的状态迁移公开可见。</p>
-        <span class="go">进入 →</span>
-      </a>
+  <section class="wrap r-essays">
+    <div class="ehead">
+      <h2>文章</h2>
+      <p>判断卡是压缩形态，文章是同一个判断的完整推导。</p>
     </div>
+    {
+      essays.map((n) => (
+        <a class="essay" href={`/notes/${n.slug}/`}>
+          <span class="etitle">{n.title}</span>
+          <span class="status-tag" data-status={n.status}>{n.status}</span>
+          {n.excerpt && <p class="elede">{n.excerpt}</p>}
+          <span class="epair">{n.cardId ? `配对卡 · ${n.cardId}` : '未立卡'}</span>
+        </a>
+      ))
+    }
   </section>
 
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">最近在想什么</span>
-    <NoteList limit={5} />
-  </section>
-
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <p class="copy">
-      这些判断在真实项目里如何生产 → <a href="/method/">工作方法</a>
-    </p>
+  <section class="wrap r-foot">
+    <p class="copy">这些判断在真实项目里如何生产 → <a href="/method/">工作方法</a></p>
   </section>
 </BaseLayout>
+
+<style>
+  .r-open { padding-block: calc(2 * var(--leading)) 0; }
+  .r-h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.2vw, 40px);
+    line-height: 1.32;
+    letter-spacing: 0.01em;
+    margin: 0;
+    max-width: 20em;
+  }
+  .r-lede { margin: 28px 0 0; font-size: 18px; line-height: 1.95; color: var(--ink-70); max-width: 36em; }
+  .r-label { margin: 0 0 4px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; color: var(--ink-55); }
+
+  .r-entries {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--divider);
+    border: 1px solid var(--divider);
+  }
+  .r-entry {
+    background: var(--paper);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .r-entry:hover { background: var(--surface); }
+  .r-entry .etop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .r-entry .epath { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink-55); }
+  .r-entry .emeta {
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--ink-55);
+    border: 1px solid var(--divider);
+    padding: 2px 8px;
+  }
+  .r-entry .etitle { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: 0.02em; }
+  .r-entry:hover .etitle { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .r-entry .edesc { font-size: 15.5px; line-height: 1.85; color: var(--ink-70); max-width: 32em; }
+
+  .r-changes { margin-top: 48px; }
+  .r-changes .crow {
+    display: grid;
+    grid-template-columns: 8em 9em minmax(0, 1fr);
+    gap: 6px 20px;
+    align-items: baseline;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--divider);
+  }
+  .r-changes .cdate { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-55); font-variant-numeric: tabular-nums; }
+  .r-changes .cdelta { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .r-changes .cnote { font-size: 15px; line-height: 1.8; color: var(--ink-70); }
+
+  .r-essays { margin-top: clamp(48px, 5vw, 72px); padding-top: clamp(40px, 4vw, 56px); }
+  .r-essays .ehead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .r-essays .ehead h2 { margin: 0; font-family: var(--font-display); font-size: clamp(24px, 2.6vw, 32px); font-weight: 700; letter-spacing: 0.02em; }
+  .r-essays .ehead p { margin: 0; font-size: 14.5px; color: var(--ink-70); }
+  .r-essays .essay {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 14em;
+    gap: 12px 36px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--divider);
+    text-decoration: none;
+    color: inherit;
+  }
+  .r-essays .essay:hover { background: var(--surface); }
+  .r-essays .essay .etitle { font-family: var(--font-display); font-weight: 700; font-size: clamp(20px, 2.1vw, 25px); line-height: 1.45; letter-spacing: 0.02em; }
+  .r-essays .essay:hover .etitle { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .r-essays .essay .status-tag { justify-self: end; height: fit-content; }
+  .r-essays .essay .elede { grid-column: 1; margin: 0; font-size: 16px; line-height: 1.9; color: var(--ink-70); max-width: 40em; }
+  .r-essays .essay .epair { grid-column: 2; justify-self: end; font-family: var(--font-mono); font-size: 12px; color: var(--ink-55); text-align: right; }
+
+  .r-foot { padding-block: calc(1.4 * var(--leading)) calc(2.4 * var(--leading)); }
+
+  @media (min-width: 900px) {
+    .r-entries { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .r-changes .crow { grid-template-columns: 1fr; }
+    .r-essays .essay { grid-template-columns: 1fr; }
+    .r-essays .essay .status-tag { justify-self: start; }
+    .r-essays .essay .elede, .r-essays .essay .epair { grid-column: 1; justify-self: start; text-align: left; }
+  }
+</style>

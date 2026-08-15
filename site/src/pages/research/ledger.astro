@@ -1,32 +1,73 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import JudgmentCard from '../../components/JudgmentCard.astro';
+import LedgerCard from '../../components/LedgerCard.astro';
 import { CARDS } from '../../data/cards';
 import { QUESTIONS, HYPOTHESES } from '../../data/ledger';
+
+const avg = CARDS.reduce((s, c) => s + c.confidence, 0) / CARDS.length;
+const falsifierCount = CARDS.reduce(
+  (s, c) => s + (Array.isArray(c.falsifier) ? c.falsifier.length : 1),
+  0,
+);
+const reviewed = CARDS.filter((c) => (c.revisions ?? []).length > 0).length;
+
+const stats = [
+  { n: String(CARDS.length), label: '公开判断卡' },
+  { n: avg.toFixed(2), label: '平均置信度' },
+  { n: String(falsifierCount), label: '可证伪的失效条件' },
+  { n: String(reviewed), label: '已完成复核的卡' },
+];
+
+const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
+  kind: k,
+  n: CARDS.filter((c) => c.kind === k).length,
+}));
 ---
 
 <BaseLayout
-  title="公开判断账本"
+  title="公开判断记录"
   active="research"
-  description="提前公开、带失效条件、可被打脸的判断。问题 → 假设 → 判断，状态迁移公开可见。"
+  description="提前公开，带失效条件；改判只追加，不删改。"
 >
-  <section class="wrap section">
-    <span class="kicker">研究与判断 · 判断账本</span>
-    <h1 class="h2">提前公开，带失效条件，对错由时间裁决。</h1>
-    <p class="copy" style="margin-top: var(--leading);">
-      这一页记的是我自己的判断账。账上的东西分三类：<b>问题</b>——我还没有答案，一行即可；<b>假设</b>——有初步解释，但证据不充分，只写短段落并交代当前证据状态；<b>判断</b>——我愿意据此行动、据此配置的结论，上完整卡片。
-    </p>
-    <p class="copy" style="margin-top: var(--leading);">
-      两条铁律：<b>写不出失效条件的命题不上卡</b>；<b>每季度半小时全卡复核，更新复核日期，改判只追加、不删改。</b>问题 → 假设 → 判断的状态迁移，就是这一页的生命——它把「原始材料进来、可被追问的判断出去」这条生产线，在我自己身上公开演一遍。
-    </p>
-    <p class="copy" style="margin-top: var(--leading);">
-      首批完整卡 {CARDS.length} 张，宁缺毋滥。置信度一栏目前统一带【待审】标记，是我还没有逐张定稿的诚实记号，不是排版遗漏。
-    </p>
+  <section class="ledger dark">
+    <div class="wrap inner">
+      <p class="kicker">公开判断记录</p>
+      <h1 class="lh1">提前公开，带失效条件；改判只追加，不删改</h1>
+      <p class="llede">
+        置信度既会上调也会下调，复核记录留在卡上——包括那些被自己的数据部分证伪的。
+      </p>
+
+      <div class="lstats">
+        {
+          stats.map((s) => (
+            <div>
+              <p class="sn">{s.n}</p>
+              <p class="sl">{s.label}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="lfilters" role="group" aria-label="按领域筛选">
+        <button type="button" class="chip on" data-kind="">全部 {CARDS.length}</button>
+        {
+          kinds.map((k) => (
+            <button type="button" class="chip" data-kind={k.kind}>{k.kind} {k.n}</button>
+          ))
+        }
+      </div>
+
+      <div class="lcards">
+        {CARDS.map((c) => <LedgerCard card={c} />)}
+      </div>
+
+      <p class="ldisc">以上为个人研究记录。涉及投资方向的卡片，均不构成投资建议。</p>
+    </div>
   </section>
 
-  <!-- 问题层 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">问题 · 我还没有答案</span>
+  <!-- 问题层与假设层：写不出失效条件的命题不上卡，停在这两层 -->
+  <section class="wrap lower">
+    <p class="kicker">问题 · 我还没有答案</p>
     <h2 class="h3">账本上不是每一格都有结论。</h2>
     <div class="layer">
       {
@@ -40,65 +81,96 @@ import { QUESTIONS, HYPOTHESES } from '../../data/ledger';
     </div>
   </section>
 
-  <!-- 假设层 -->
-  <section class="wrap section" style="border-top: 2px solid var(--divider);">
-    <span class="kicker">假设 · 有初步解释，证据不充分</span>
+  <section class="wrap lower">
+    <p class="kicker">假设 · 有初步解释，证据不充分</p>
     <h2 class="h3">这一层写明：我为什么还不敢把它写成判断。</h2>
     {
       HYPOTHESES.map((h) => (
         <div class="hypo" id={`card-${h.id}`}>
-          <p class="hfile">{h.file} · kind: 假设 · status: 待定稿</p>
+          <p class="hfile">{h.file} · kind: 假设</p>
           <p class="q">{h.proposition}</p>
 
           <p class="hl">当前证据状态</p>
-          <p class="copy">
-            <b>支持这一读法的：</b>
-            {h.support}
-          </p>
-          <p class="copy">
-            <b>反证（来自我自己的项目样本）：</b>
-            {h.counter}
-          </p>
-          <p class="copy">
-            <b>结论：</b>
-            {h.conclusion}
-          </p>
+          <p class="copy"><b>支持这一读法的：</b>{h.support}</p>
+          <p class="copy"><b>反证（来自我自己的项目样本）：</b>{h.counter}</p>
+          <p class="copy"><b>结论：</b>{h.conclusion}</p>
 
           <p class="hl">升级为判断需要看到</p>
-          <ul class="copy hlist">
-            {h.upgrade.map((u) => (
-              <li>{u}</li>
-            ))}
-          </ul>
+          <ul class="copy hlist">{h.upgrade.map((u) => <li>{u}</li>)}</ul>
 
           <p class="hl">降级或放弃需要看到</p>
-          <ul class="copy hlist">
-            {h.downgrade.map((d) => (
-              <li>{d}</li>
-            ))}
-          </ul>
+          <ul class="copy hlist">{h.downgrade.map((d) => <li>{d}</li>)}</ul>
 
-          <p class="hmeta">
-            置信度 {h.confidence} · 入账 {h.openedAt} · 最近复核 {h.reviewedAt}
-          </p>
+          <p class="hmeta">置信度 {h.confidence} · 入账 {h.openedAt} · 最近复核 {h.reviewedAt}</p>
         </div>
       ))
     }
   </section>
 
-  <!-- 判断层 -->
-  <section class="dark">
-    <div class="wrap section">
-      <span class="kicker">判断 · 完整卡片</span>
-      <h2 class="h2">押注、置信度、失效条件、日期，一项都不能少。</h2>
-      <div style="margin-top: calc(1.6 * var(--leading));">
-        {CARDS.map((c) => <JudgmentCard card={c} />)}
-      </div>
-      <p class="disclaimer">以上为个人研究记录。涉及投资方向的卡片，均不构成投资建议。</p>
-    </div>
-  </section>
-
-  <section class="wrap section">
+  <section class="wrap lower last">
     <p><a class="back" href="/research/">返回研究与判断</a></p>
   </section>
 </BaseLayout>
+
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>('.lfilters .chip');
+  const cards = document.querySelectorAll<HTMLElement>('.lcards > .lcard');
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const kind = chip.dataset.kind ?? '';
+      chips.forEach((c) => c.classList.toggle('on', c === chip));
+      cards.forEach((card) => {
+        const show = !kind || card.dataset.kind === kind;
+        card.style.display = show ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<style>
+  .ledger { padding-block: clamp(48px, 5vw, 72px); }
+  .lh1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.2vw, 40px);
+    line-height: 1.35;
+    color: var(--ink-rev);
+    max-width: 20em;
+  }
+  .llede { margin: 24px 0 0; font-size: 17px; line-height: 1.95; color: var(--dim); max-width: 36em; }
+
+  .lstats {
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px 44px;
+    padding: 24px 0;
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+  }
+  .lstats .sn { margin: 0; font-family: var(--font-mono); font-size: 32px; font-weight: 700; color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+  .lstats .sl { margin: 8px 0 0; font-size: 12.5px; letter-spacing: 0.1em; color: var(--dim); }
+
+  .lfilters { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .lfilters .chip {
+    font-family: var(--font-heading);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 7px 14px;
+    border: 1px solid var(--hair);
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+  }
+  .lfilters .chip:hover { color: var(--ink-rev); }
+  .lfilters .chip.on { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+
+  .lcards { margin-top: 32px; display: flex; flex-direction: column; gap: 20px; }
+  .ldisc { margin: var(--leading) 0 0; font-size: 12.5px; line-height: 1.75; color: var(--dim); }
+
+  .lower { padding-block: calc(1.8 * var(--leading)); }
+  .lower .h3 { margin: 0 0 var(--half); }
+  .lower.last { padding-block: 0 calc(2.4 * var(--leading)); }
+</style>

@@ -1,0 +1,185 @@
+---
+import type { JudgmentCardData } from '../data/cards';
+
+interface Props {
+  card: JudgmentCardData;
+}
+const { card } = Astro.props;
+
+const pct = Math.round(card.confidence * 100);
+const falsifiers = Array.isArray(card.falsifier) ? card.falsifier : [card.falsifier];
+const revisions = card.revisions ?? [];
+const lastRev = revisions.length > 0 ? revisions[revisions.length - 1] : null;
+const basis = card.basis ?? [];
+const anchors = card.anchors ?? [];
+---
+
+<article class="lcard" id={`card-${card.id}`} data-kind={card.kind}>
+  <header class="lhead">
+    <span class="lid">{card.id}</span>
+    <span class="lkind">{card.kind}</span>
+    <span class="ltag"><i></i>判断</span>
+    {card.draft && <span class="lflag">待定稿</span>}
+  </header>
+
+  <div class="lbody">
+    {card.title && <p class="ltitle">{card.title}</p>}
+
+    <div class="lclaim">
+      <p class="ctext">{card.judgment}</p>
+      <div class="cconf">
+        <p class="cnum">{card.confidence.toFixed(2)}</p>
+        <span class="cbar"><i style={`width:${pct}%`}></i></span>
+        {card.confidenceNote && <p class="cnote">{card.confidenceNote}</p>}
+      </div>
+    </div>
+
+    {
+      lastRev && (
+        <div class="lrev">
+          <p class="rl">复核记录 · {lastRev.date}</p>
+          <p class="rt">{lastRev.note}</p>
+        </div>
+      )
+    }
+
+    <div class="lfals">
+      <p class="fl">失效条件 · 出现任一即改判</p>
+      <div class="flist">
+        {falsifiers.map((f) => (
+          <p><span class="dash">—</span><span>{f}</span></p>
+        ))}
+      </div>
+    </div>
+
+    <div class="lfoot">
+      <span class="lmeta">入账 {card.openedAt} · 最近复核 {card.reviewedAt}</span>
+      {
+        basis.length > 0 && (
+          <details class="lmore">
+            <summary>展开主要依据（{basis.length} 条）</summary>
+            <div class="mbody">
+              <ul>
+                {basis.map((b) => <li>{b}</li>)}
+              </ul>
+              {card.weakest && <p class="mrow"><b>最弱假设</b>{card.weakest}</p>}
+              {card.counter && <p class="mrow"><b>反证信号</b>{card.counter}</p>}
+              {
+                anchors.length > 0 && (
+                  <p class="manchors">
+                    {anchors.map((a) => <code>{a}</code>)}
+                  </p>
+                )
+              }
+              {card.link && <p class="mrow"><a href={card.link.href}>{card.link.label}</a></p>}
+            </div>
+          </details>
+        )
+      }
+    </div>
+
+    {card.investment && <p class="linvest">以上为个人研究记录，不构成投资建议。</p>}
+  </div>
+</article>
+
+<style>
+  .lcard { background: var(--panel); border: 1px solid var(--hair); color: var(--ink-rev); }
+  .lhead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 18px;
+    padding: 16px clamp(20px, 2.4vw, 32px);
+    border-bottom: 1px solid var(--hair);
+    background: #12233a;
+  }
+  .lid { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--gold); }
+  .lkind { font-family: var(--font-mono); font-size: 12px; color: var(--dim); }
+  .ltag {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+  }
+  .ltag i { width: 8px; height: 8px; background: var(--gold); }
+  .lflag {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--risk);
+    border: 1px solid #7d3a3a;
+    padding: 3px 9px;
+  }
+
+  .lbody { padding: clamp(22px, 2.6vw, 32px); display: flex; flex-direction: column; gap: 22px; }
+  .ltitle { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(19px, 1.9vw, 23px); line-height: 1.5; }
+
+  .lclaim {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px 32px;
+    align-items: center;
+    padding: 18px 0;
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+  }
+  .ctext { margin: 0; font-size: 16px; line-height: 1.9; max-width: 44em; }
+  .cconf { text-align: right; }
+  .cnum { margin: 0; font-family: var(--font-mono); font-size: 34px; font-weight: 700; color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+  .cbar { display: block; margin-top: 8px; width: 150px; height: 8px; background: var(--code-bg); }
+  .cbar i { display: block; height: 100%; background: var(--gold); }
+  .cnote { margin: 8px 0 0; font-size: 12px; letter-spacing: 0.06em; color: var(--dim); }
+
+  .lrev { border-left: 3px solid var(--gold); padding: 2px 0 2px 18px; }
+  .lrev .rl { margin: 0 0 8px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: var(--gold); }
+  .lrev .rt { margin: 0; font-size: 15px; line-height: 1.9; color: #c3d3ea; max-width: 46em; }
+
+  .lfals .fl { margin: 0 0 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: var(--risk); }
+  .lfals .flist { display: flex; flex-direction: column; gap: 8px; }
+  .lfals .flist p { margin: 0; display: grid; grid-template-columns: 1.4em minmax(0, 1fr); font-size: 15px; line-height: 1.85; color: #c3d3ea; max-width: 48em; }
+  .lfals .dash { color: var(--risk); }
+
+  .lfoot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--hair);
+  }
+  .lmeta { font-family: var(--font-mono); font-size: 12px; color: #7f97b8; }
+  .lmore { margin-left: auto; }
+  .lmore summary {
+    list-style: none;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--ink-rev);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    white-space: nowrap;
+  }
+  .lmore summary::-webkit-details-marker { display: none; }
+  .lmore summary:hover { text-decoration-thickness: 3px; }
+  .lmore .mbody { margin-top: 16px; }
+  .lmore ul { margin: 0; padding-left: 1.3em; font-size: 15px; line-height: 1.85; color: #c3d3ea; }
+  .lmore li + li { margin-top: 8px; }
+  .lmore .mrow { margin: 14px 0 0; font-size: 15px; line-height: 1.85; color: #c3d3ea; }
+  .lmore .mrow b { display: block; font-family: var(--font-heading); font-size: 12px; letter-spacing: 0.14em; color: var(--gold); margin-bottom: 6px; }
+  .lmore .mrow a { color: var(--gold); }
+  .lmore .manchors { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  .lmore code { font-family: var(--font-mono); font-size: 12px; background: var(--code-bg); color: var(--gold); padding: 3px 8px; }
+
+  .linvest { margin: 0; font-size: 12.5px; line-height: 1.75; color: var(--dim); }
+
+  @media (max-width: 700px) {
+    .lclaim { grid-template-columns: 1fr; }
+    .cconf { text-align: left; }
+    .lmore { margin-left: 0; }
+  }
+</style>
