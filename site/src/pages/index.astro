@@ -1,39 +1,76 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SiteFooter from '../components/SiteFooter.astro';
+import JudgmentCard from '../components/JudgmentCard.astro';
 import { SITE } from '../data/site';
+import { recentNotes } from '../lib/notes';
+
+const notes = await recentNotes(5);
+
+const doors = [
+  {
+    path: '/method/',
+    title: '工作方法',
+    keys: '方法 / 工具 / 实践',
+    desc: '记录我在真实项目中处理材料、建立证据、形成判断和复盘修正的方法。',
+  },
+  {
+    path: '/research/',
+    title: '研究与判断',
+    keys: '观点 / 研究 / 修正',
+    desc: '记录我对 AI、组织、商业与市场的长期观察，以及这些判断后来如何被现实验证或推翻。',
+  },
+];
 ---
 
-<!-- 纸面封面：站名、一句定位、两扇门、页脚。一屏放下。 -->
-<BaseLayout bare>
-  <div class="gate-page">
-    <div class="gate">
-      <header class="gate-head">
-        <div class="gate-top">
-          <h1 class="gate-title">{SITE.name}</h1>
-          <a class="gate-about" href="/about/">关于我</a>
-        </div>
-        <p class="gate-sub">{SITE.tagline}</p>
-        <p class="gate-intro">
-          我的工作横跨组织咨询、AI 工作流、宏观与投资研究，但核心一直是同一件事：面对复杂信息，找到真正的问题，形成可以被追问和验证的判断。
-        </p>
-      </header>
+<BaseLayout description={SITE.tagline}>
+  <header class="home-hero">
+    <p class="kicker">{SITE.name}</p>
+    <h1 class="display">{SITE.tagline}</h1>
+    <p class="home-intro">
+      顺着好奇心持续探索、研究和尝试，在复杂世界里寻找真正的问题，形成自己的判断，再让实践和时间不断检验、修正它。
+    </p>
+  </header>
+  <hr class="home-rule" />
 
-      <div class="gate-doors" aria-label="进入主题栏目">
-        <a class="gate-door" href="/method/">
-          <p class="door-name">工作方法</p>
-          <p class="door-desc">我如何在真实项目里，生产、记账、传承判断。</p>
-          <p class="door-go">原始材料进来，可被追问的判断出去</p>
+  <nav class="home-doors" aria-label="主题栏目">
+    {
+      doors.map((d) => (
+        <a class="home-door" href={d.path}>
+          <span class="dpath">{d.path}</span>
+          <p class="dname">{d.title}</p>
+          <p class="ddesc">{d.desc}</p>
+          <p class="dkeys">{d.keys}</p>
         </a>
+      ))
+    }
+  </nav>
 
-        <a class="gate-door" href="/research/">
-          <p class="door-name">研究与判断</p>
-          <p class="door-desc">我对 AI、组织与市场的长期判断，以及它们如何被现实修正。</p>
-          <p class="door-go">提前公开，带失效条件，对错由时间裁决</p>
-        </a>
-      </div>
+  <section class="home-ledger dark" aria-labelledby="home-card-h">
+    <div class="inner">
+      <p class="kicker" id="home-card-h">一张判断长这样</p>
+      <JudgmentCard id="CS-XINGLAN-01" />
+      <p class="card-note-out">
+        每张卡都写明依据、置信度和失效条件，改判追加记录、不删旧版 →
+        <a href="/research/ledger/">公开判断记录</a>
+      </p>
     </div>
+  </section>
 
-    <SiteFooter />
-  </div>
+  <section class="home-notes" aria-labelledby="home-notes-h">
+    <div class="nhead">
+      <h2 id="home-notes-h">最近笔记</h2>
+      <a href="/notes/">全部笔记</a>
+    </div>
+    <div class="nlist">
+      {
+        notes.map((n) => (
+          <a class="nitem" href={`/notes/${n.slug}/`}>
+            <span class="nd">{n.date}</span>
+            <span class="nt">{n.title}</span>
+            <span class="status-tag" data-status={n.status}>{n.status}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
 </BaseLayout>

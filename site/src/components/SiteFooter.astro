@@ -11,14 +11,12 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer" style={seamless ? 'border-top: 0;' : undefined}>
   <div class="foot-main">
-    <span>© {year} <b>{SITE.name}</b></span>
-    <span>来信交流：<a href={`mailto:${SITE.email}`}>{SITE.email}</a></span>
-  </div>
-  <div class="icp">
+    <span>© {year} 王少怀</span>
+    <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
     <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">{SITE.icp}</a>
-    <span class="mps">
-      <img src="/gongan-beian.png" width="18" height="20" alt="公安备案图标" />
-      <a href={SITE.mpsUrl} rel="noreferrer" target="_blank">{SITE.mps}</a>
-    </span>
+    <a class="mps" href={SITE.mpsUrl} target="_blank" rel="noreferrer">
+      <img src="/gongan-beian.png" width="14" height="14" alt="" />
+      {SITE.mps}
+    </a>
   </div>
 </footer>

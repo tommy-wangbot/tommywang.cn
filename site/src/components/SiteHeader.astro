@@ -1,13 +1,17 @@
 ---
 import { SITE } from '../data/site';
 interface Props {
-  /** 当前所在栏目：method | research | about | undefined */
-  active?: 'method' | 'research' | 'about';
+  /** 当前所在栏目：method | research | notes | about | undefined */
+  active?: 'method' | 'research' | 'notes' | 'about';
 }
 const { active } = Astro.props;
-const keyOf = (href: string) => (href.startsWith('/method') ? 'method' : 'research');
+const keyOf = (href: string) => {
+  if (href.startsWith('/method')) return 'method';
+  if (href.startsWith('/research')) return 'research';
+  return 'notes';
+};
 ---
-<!-- 内页导航：站名 + 两扇门 + 关于我。关于我只是小字链接，不是第三扇门。 -->
+<!-- 内页导航：站名 + 三个栏目 + 关于我。关于我只是小字链接，不是第四个栏目。 -->
 <nav class="nav" aria-label="主导航">
   <div class="nav-inner">
     <a class="nav-brand" href="/">

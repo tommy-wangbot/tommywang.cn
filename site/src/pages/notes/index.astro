@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StatusTag from '../../components/StatusTag.astro';
+import { recentNotes } from '../../lib/notes';
+
+const notes = await recentNotes();
+---
+
+<BaseLayout
+  title="笔记"
+  active="notes"
+  description="还不够格上判断卡的东西：可能推翻现有判断的信号、说不清但放不下的问题。"
+>
+  <article class="wrap notes-index">
+    <p class="kicker">弱信号层</p>
+    <h1 class="h2">笔记</h1>
+    <p class="copy">
+      还不够格上判断卡的东西：可能推翻我现在判断的信号、说不清但放不下的问题。攒够证据的会立卡，立不起来的就留在这里。
+    </p>
+
+    <div class="list">
+      {
+        notes.map((n) => (
+          <a class="item" href={`/notes/${n.slug}/`}>
+            <span class="id">{n.date}</span>
+            <span class="it">{n.title}</span>
+            {n.excerpt && <p class="ix">{n.excerpt}</p>}
+            <span class="ist">
+              <StatusTag status={n.status} cardId={n.cardId} />
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .notes-index { padding-block: calc(1.8 * var(--leading)) calc(2.2 * var(--leading)); }
+  .notes-index .h2 { margin: 0 0 var(--half); }
+  .notes-index .copy { max-width: 40em; }
+</style>
