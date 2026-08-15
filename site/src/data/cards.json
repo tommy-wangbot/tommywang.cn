@@ -176,7 +176,7 @@
         { "date": "2026-08-03", "note": "整理为公开卡：置信度按其他卡口径补估为 0.75，【待审】；失效条件照录原卡，判断本身未改。" }
       ],
       "anchors": ["案例 · 星澜传媒重整（已脱敏）"],
-      "link": { "href": "/mingjian/cases/xinglan/", "label": "完整案例：星澜传媒重整 →" }
+      "link": { "href": "/method/cases/xinglan/", "label": "完整案例：星澜传媒重整 →" }
     }
   ]
 }

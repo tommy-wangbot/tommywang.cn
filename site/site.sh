@@ -26,7 +26,7 @@ case "$cmd" in
   start)   npm run build && docker compose up -d --build ;;
   stop)    docker compose down ;;
   restart) docker compose restart ;;
-  rebuild) npm run build && docker compose restart ;;
+  rebuild) npm run build && docker compose up -d --build ;;
   logs)    docker compose logs -f --tail=100 ;;
   status)  docker compose ps ;;
   *)       usage ;;

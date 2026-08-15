@@ -14,7 +14,7 @@ const cardIds: string[] = entry.data.cards ?? [];
 const kicker = entry.data.order === 1 ? '工作方法 · 案例一' : `工作方法 · 案例${entry.data.order}`;
 ---
 
-<BaseLayout title={entry.data.title} active="mingjian" description={entry.data.summary}>
+<BaseLayout title={entry.data.title} active="method" description={entry.data.summary}>
   <article class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading)) 0;">
     <span class="kicker">{kicker}</span>
     <h1 class="h2">{entry.data.title}</h1>
@@ -47,6 +47,6 @@ const kicker = entry.data.order === 1 ? '工作方法 · 案例一' : `工作方
   }
 
   <section class="wrap-narrow" style="padding-block: calc(2.4 * var(--leading));">
-    <p><a class="back" href="/mingjian/">返回工作方法</a></p>
+    <p><a class="back" href="/method/">返回工作方法</a></p>
   </section>
 </BaseLayout>

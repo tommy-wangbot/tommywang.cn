@@ -18,7 +18,7 @@ const notes = defineCollection({
   }),
 });
 
-/** 案例（/mingjian/cases/<slug>）。两篇案例 frontmatter 统一为本 schema。 */
+/** 案例（/method/cases/<slug>）。两篇案例 frontmatter 统一为本 schema。 */
 const cases = defineCollection({
   loader: glob({ base: './src/content/cases', pattern: '**/*.md' }),
   schema: z.object({
