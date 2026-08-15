@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusTag from '../../components/StatusTag.astro';
 import { recentNotes } from '../../lib/notes';
 
-const notes = await recentNotes();
+/** 只有弱信号进这一页；长文归 /research/ 的「文章」 */
+const notes = await recentNotes(undefined, '笔记');
 ---
 
 <BaseLayout

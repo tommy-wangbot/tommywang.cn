@@ -10,9 +10,16 @@ const notes = defineCollection({
     date: z.coerce.date(),
     /** 文首状态标签 */
     status: z.enum(['问题', '假设', '判断']),
+    /**
+     * 内容层归属：
+     * 文章 — 长文，判断的完整推导，挂在 /research/
+     * 笔记 — 弱信号，一段话，挂在 /notes/
+     * 一份内容只属于一个栏目，避免三处重复。
+     */
+    kind: z.enum(['文章', '笔记']).default('笔记'),
     /** 已入账本时链向对应判断卡 */
     cardId: z.string().optional(),
-    /** 一句摘要，用于「最近在想什么」列表 */
+    /** 一句摘要，用于列表 */
     excerpt: z.string().optional(),
     draft: z.boolean().default(false),
   }),
@@ -27,7 +34,7 @@ const cases = defineCollection({
     slug: z.string(),
     /** 摘要，用于页首与 meta description */
     summary: z.string(),
-    /** 排序（明鉴页摘要卡与索引用） */
+    /** 排序（工作方法页摘要卡与索引用） */
     order: z.number(),
     draft: z.boolean().default(false),
     /** 本案例挂出的判断卡 id，取自 cards.json */

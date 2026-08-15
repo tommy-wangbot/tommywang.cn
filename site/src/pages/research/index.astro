@@ -31,8 +31,12 @@ const changes = [
   },
 ];
 
-/** 判断没有资产化那篇已移到 /method/ 开头，这里不重复挂 */
-const essays = (await recentNotes()).filter((n) => n.slug !== 'judgment-never-capitalized');
+/**
+ * 只列长文（kind: 文章）。弱信号在 /notes/。
+ * 「判断没有资产化」那篇同时是 /method/ 开头的入口，这里照常挂——
+ * 它的归属栏目是文章，方法页只是引用它。
+ */
+const essays = await recentNotes(undefined, '文章');
 ---
 
 <BaseLayout
@@ -91,6 +95,7 @@ const essays = (await recentNotes()).filter((n) => n.slug !== 'judgment-never-ca
         </a>
       ))
     }
+    <p class="r-more">还不够格上判断卡的信号与问题 → <a href="/notes/">笔记</a></p>
   </section>
 
   <section class="wrap r-foot">
@@ -185,6 +190,7 @@ const essays = (await recentNotes()).filter((n) => n.slug !== 'judgment-never-ca
   .r-essays .essay .status-tag { justify-self: end; height: fit-content; }
   .r-essays .essay .elede { grid-column: 1; margin: 0; font-size: 16px; line-height: 1.9; color: var(--ink-70); max-width: 40em; }
   .r-essays .essay .epair { grid-column: 2; justify-self: end; font-family: var(--font-mono); font-size: 12px; color: var(--ink-55); text-align: right; }
+  .r-more { margin: var(--leading) 0 0; font-size: 15.5px; color: var(--ink-70); }
 
   .r-foot { padding-block: calc(1.4 * var(--leading)) calc(2.4 * var(--leading)); }
 

@@ -1,7 +1,8 @@
 ---
 title: 客户说的问题，为什么往往不是真问题
-date: 2026-08-03
+date: 2026-06-26
 status: 判断
+kind: 文章
 cardId: CS-XINGLAN-01
 excerpt: 问题定义是这条价值链的最上游。「定岗定编」的诉求背后，可能是一个还没被回答的治理问题——三个可以当场核对的信号。
 draft: false
