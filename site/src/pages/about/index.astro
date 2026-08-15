@@ -1,43 +1,236 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SITE } from '../../data/site';
+
+const principles = [
+  {
+    no: '01',
+    name: '先找问题，再找答案。',
+    body: '很多错误并不是答案错了，而是一开始回答的就不是那个真正的问题。',
+  },
+  {
+    no: '02',
+    name: '事实、推断和观点分开。',
+    body: '我尽量知道一个结论究竟来自证据，还是来自自己的推演。',
+  },
+  {
+    no: '03',
+    name: '重要判断应该留下依据。',
+    body: '一个结论如果无法解释“为什么这样判断”，它就很难被真正检验。',
+  },
+  {
+    no: '04',
+    name: '允许自己被现实推翻。',
+    body: '判断不是为了证明自己当初是对的；新的事实出现以后，修改旧判断本身就是研究的一部分。',
+  },
+];
+
+const EMAIL = 'wsh@tommywang.cn';
 ---
 
 <BaseLayout
   title="关于我"
   active="about"
-  description="我在解决什么问题，我是谁，现在在做什么。"
+  description="我是谁，我为什么做这些事情，我如何工作。"
 >
   <article class="wrap-narrow about-page">
     <span class="kicker">关于我</span>
-    <h1 class="h2">先讲问题，再讲这个人。</h1>
-
-    <section>
-      <h2 class="h3">我在解决什么问题</h2>
-      <p>
-        判断正在变成组织最贵、又最没人管理的资产。材料越来越多，选项越来越快，真正稀缺的不是信息，而是：选哪个、为什么、谁负责。我关心的是把这件事做成可追溯、可验证、能持续更新的工作。
-      </p>
-    </section>
+    <h1 class="h2">王少怀</h1>
+    <p class="lead">
+      管理咨询顾问。研究问题，形成判断，把方法变成能运行的系统，再放回真实项目里检验。
+    </p>
 
     <section>
       <h2 class="h3">我是谁</h2>
       <p>
-        我是咨询公司高级顾问，长期做组织和战略咨询，深耕电信、广电这类强监管、重组织的行业。现在把 AI 嵌进自己的判断生产过程：材料怎么入库，判断怎么记账，改判怎么留痕。
+        我当前是一名管理咨询顾问，也是一名长期保持研究和系统建设习惯的实践者。我的工作主要围绕复杂问题展开：研究问题、形成判断，把方法变成可以实际运行的工具和系统，再通过真实项目不断检验和修正它们。
+      </p>
+      <p>这个网站记录的，就是这个过程。</p>
+    </section>
+
+    <section>
+      <h2 class="h3">我为什么做这些事情</h2>
+      <p>
+        我的兴趣看起来有些分散。我会研究组织和商业问题，也会追踪 AI 的变化；会写研究和判断，也会自己搭工具、工作流和系统。
+      </p>
+      <p>但这些事情背后其实是同一个问题：</p>
+      <p class="pull">
+        面对一个陌生而复杂的问题，我们怎样逐渐接近真实，并形成足够可靠的判断？
+      </p>
+      <p>
+        所以我习惯顺着问题继续往下走。缺信息，就找证据；缺结构，就建立框架；现有工具解决不了，就尝试自己搭工具；形成判断以后，再把它放进真实工作和时间里验证。
+      </p>
+      <p>
+        久而久之，研究、咨询、AI 和系统建设对我来说已经不是几件彼此分开的事情，而是同一种工作方式的不同部分。
       </p>
     </section>
 
     <section>
-      <h2 class="h3">现在在做什么</h2>
+      <h2 class="h3">我如何工作</h2>
+      <ol class="principles">
+        {
+          principles.map((p) => (
+            <li>
+              <span class="pn">{p.no}</span>
+              <span class="pt">{p.name}</span>
+              <p class="pb">{p.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section>
+      <h2 class="h3">我做过什么</h2>
       <p>
-        正在写《认知资本论》，正在公开判断账本，也在真实项目里继续跑这套工作方法。这个站不是产品册，是见面前后可以查证的笔记。
+        我的主要职业实践来自咨询工作，长期处理组织、战略与经营中的复杂问题。近几年，我越来越多地把 AI 引入研究和咨询工作，并开始自己构建用于材料处理、证据管理、研究、判断和知识沉淀的工作系统。
+      </p>
+      <p>
+        很多这里写下来的方法，并不是先设计出来再寻找应用场景，而是在真实问题中反复使用、失败、修改之后逐渐形成的。
+      </p>
+      <p class="xref">
+        完整工序 → <a href="/method/">工作方法</a>　真实项目 → <a href="/method/cases/xinglan/">案例</a>
       </p>
     </section>
 
     <section>
-      <h2 class="h3">怎么联系</h2>
+      <h2 class="h3">这个网站会有什么</h2>
       <p>
-        来信交流：<a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        我会在这里持续记录三类东西：真实工作中形成的方法和工具；对 AI、组织、商业与市场问题的研究与判断；以及过去判断后来发生了什么。
       </p>
+      <p>
+        我希望尽可能保留判断形成时的依据、时间和不确定性。对的留下，错的也留下。因为相比永远显得正确，我更在意自己的认识究竟是怎样变化的。
+      </p>
+      <p class="xref">
+        已经入账的判断 → <a href="/research/ledger/">公开判断记录</a>
+      </p>
+    </section>
+
+    <section class="contact">
+      <h2 class="h3">交流与联系</h2>
+      <div class="contact-grid">
+        <div>
+          <p class="clabel">邮箱</p>
+          <p class="cmail"><a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+          <p class="cnote">
+            研究、咨询与合作相关的来信都欢迎。说清楚你想解决的问题，通常比说清楚需求更有用。
+          </p>
+        </div>
+        <div>
+          <p class="clabel">微信</p>
+          <details class="qr">
+            <summary>＋ 显示二维码</summary>
+            <div class="qr-body">
+              <img src="/wechat-qr.jpg" width="158" height="158" alt="王少怀的微信二维码" />
+              <p>扫码添加 · 北京 朝阳</p>
+            </div>
+          </details>
+        </div>
+      </div>
     </section>
   </article>
 </BaseLayout>
+
+<style>
+  /* 关于我页专用；全局 .about-page 已提供上下留白与段落样式 */
+  .about-page .lead { margin-top: 18px; }
+
+  .pull {
+    margin-top: var(--leading);
+    padding-left: 22px;
+    border-left: 2px solid var(--ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+
+  .principles {
+    list-style: none;
+    margin: var(--leading) 0 0;
+    padding: 0;
+    border-top: 1px solid var(--divider);
+  }
+  .principles li {
+    display: grid;
+    grid-template-columns: 3.4em minmax(0, 1fr);
+    gap: 6px 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--divider);
+  }
+  .principles .pn {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    padding-top: 4px;
+    color: var(--ink);
+  }
+  .principles .pt {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+  .principles .pb {
+    grid-column: 2;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.9;
+    color: var(--ink-70);
+  }
+
+  .xref { font-size: 15px; color: var(--ink-70); }
+
+  .contact { border-top: 2px solid var(--ink); padding-top: var(--leading); }
+  .contact-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-start;
+    margin-top: var(--half);
+  }
+  .contact-grid > div:first-child { flex: 1 1 16em; min-width: 14em; }
+
+  .clabel {
+    margin: 0 0 8px;
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--ink-55);
+  }
+  .cmail { margin: 0 0 20px; font-family: var(--font-mono); font-size: 17px; }
+  .cnote { margin: 0; font-size: 15px; line-height: 1.9; color: var(--ink-70); }
+
+  .qr summary {
+    list-style: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--ink);
+    padding: 8px 14px;
+    font-size: 15px;
+    user-select: none;
+  }
+  .qr summary::-webkit-details-marker { display: none; }
+  .qr summary:hover { background: var(--ink); color: var(--paper); }
+  .qr-body {
+    margin-top: 12px;
+    border: 1px solid var(--divider);
+    background: #fff;
+    padding: 12px;
+    width: fit-content;
+  }
+  .qr-body img { display: block; width: 158px; height: auto; }
+  .qr-body p {
+    margin: 10px 0 0;
+    font-size: 13px;
+    text-align: center;
+    color: var(--ink-55);
+  }
+
+  @media (max-width: 560px) {
+    .contact-grid { gap: 24px; }
+  }
+</style>
