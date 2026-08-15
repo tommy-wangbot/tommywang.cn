@@ -88,7 +88,7 @@ const done = parts.filter((p: any) => p.data.published).length;
     transition: background 180ms ease, padding 180ms ease;
   }
   a.part:hover {
-    background: color-mix(in srgb, var(--gold) 8%, var(--paper));
+    background: var(--surface);
     padding-inline: 12px;
   }
   .part-head {
@@ -111,7 +111,7 @@ const done = parts.filter((p: any) => p.data.published).length;
     margin: 0;
   }
   a.part:hover .part-title {
-    color: var(--gold);
+    color: var(--ink);
   }
   .part-sum {
     margin: 12px 0 0;
@@ -142,7 +142,7 @@ const done = parts.filter((p: any) => p.data.published).length;
     color: var(--ink-55);
   }
   a.part:hover .part-go {
-    color: var(--gold);
+    color: var(--ink);
   }
   /* 未公开的部分整体压暗，一眼能和可读的区分开 */
   div.part .part-title,

@@ -48,8 +48,8 @@
   --focus: #3b6ea5;
 
   /* ── 字体栈：纯系统字体，不加载任何外部字体 ── */
-  --font-display: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC",
-    "Georgia", "Times New Roman", serif;
+  --font-display: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
+    "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
   --font-heading: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
     "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
   --font-body: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
