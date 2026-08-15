@@ -1,0 +1,14 @@
+# 二进制备份包（保留解压版入库，包本身留本地）
+backups/*.tar.gz
+
+# macOS
+.DS_Store
+
+# Node / Astro 构建产物
+node_modules/
+dist/
+.astro/
+
+# 编辑器
+.vscode/
+.idea/
