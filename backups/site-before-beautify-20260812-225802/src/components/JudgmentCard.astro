@@ -1,0 +1,147 @@
+---
+import { getCard, type JudgmentCardData } from '../data/cards';
+
+interface Props {
+  /** 传 id 从 cards.json 取；或直接传 card 对象 */
+  id?: string;
+  card?: JudgmentCardData;
+}
+
+const { id, card: cardProp } = Astro.props;
+const card: JudgmentCardData = cardProp ?? getCard(id!);
+
+const pct = Math.round(card.confidence * 100);
+const meta = [
+  card.file ?? `judgment_cards/${card.id}.md`,
+  `kind: ${card.kind}`,
+  card.draft ? 'status: 待定稿' : 'status: active',
+  card.priority ? `priority: ${card.priority}` : null,
+]
+  .filter(Boolean)
+  .join(' · ');
+
+const basis = card.basis ?? [];
+const falsifiers = Array.isArray(card.falsifier) ? card.falsifier : [card.falsifier];
+const revisions = card.revisions ?? [];
+---
+
+<article class="card-doc" id={`card-${card.id}`}>
+  <p class="fname">{meta}</p>
+  {card.title && <p class="card-title">{card.title}</p>}
+
+  <div class="kv">
+    <div class="k">判断</div>
+    <div class="v"><strong>{card.judgment}</strong></div>
+
+    <div class="k">置信度</div>
+    <div class="v">
+      <span class="conf">
+        <span class="val">{card.confidence.toFixed(2)}</span>
+        <span class="bar"><i style={`width:${pct}%`}></i></span>
+        {card.confidenceNote && <span class="memo">{card.confidenceNote}</span>}
+      </span>
+    </div>
+
+    {
+      basis.length > 0 && (
+        <>
+          <div class="k">主要依据</div>
+          <div class="v">
+            {basis.length === 1 ? (
+              basis[0]
+            ) : (
+              <ul>
+                {basis.map((b) => (
+                  <li>{b}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )
+    }
+
+    {
+      card.weakest && (
+        <>
+          <div class="k">最弱假设</div>
+          <div class="v">{card.weakest}</div>
+        </>
+      )
+    }
+
+    {
+      card.counter && (
+        <>
+          <div class="k">反证信号</div>
+          <div class="v">{card.counter}</div>
+        </>
+      )
+    }
+
+    <div class="k">失效条件</div>
+    <div class="v">
+      {
+        falsifiers.length === 1 ? (
+          <span class="risk">{falsifiers[0]}</span>
+        ) : (
+          <ul class="risk">
+            {falsifiers.map((f) => (
+              <li>{f}</li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <div class="k">入账日期</div>
+    <div class="v">{card.openedAt}</div>
+
+    <div class="k">最近复核</div>
+    <div class="v">{card.reviewedAt}</div>
+
+    {
+      revisions.length > 0 && (
+        <>
+          <div class="k">修订记录</div>
+          <div class="v">
+            <ul class="revs">
+              {revisions.map((r) => (
+                <li>
+                  <span class="d">{r.date}</span>
+                  <span>{r.note}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )
+    }
+
+    {
+      card.anchors && card.anchors.length > 0 && (
+        <>
+          <div class="k">证据锚点</div>
+          <div class="v">
+            {card.anchors.map((a) => (
+              <code>{a}</code>
+            ))}
+          </div>
+        </>
+      )
+    }
+
+    {
+      card.link && (
+        <>
+          <div class="k">关联页面</div>
+          <div class="v">
+            <a href={card.link.href}>{card.link.label}</a>
+          </div>
+        </>
+      )
+    }
+  </div>
+
+  {card.investment && <p class="card-note">以上为个人研究记录，不构成投资建议。</p>}
+</article>

@@ -1,0 +1,52 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import JudgmentCard from '../../../components/JudgmentCard.astro';
+
+export async function getStaticPaths() {
+  const cases = await getCollection('cases', (e: any) => !e.data.draft);
+  return cases.map((entry: any) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const cardIds: string[] = entry.data.cards ?? [];
+const kicker = entry.data.order === 1 ? '明鉴 · 案例一' : `明鉴 · 案例${entry.data.order}`;
+---
+
+<BaseLayout title={entry.data.title} active="mingjian" description={entry.data.summary}>
+  <article class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading)) 0;">
+    <span class="kicker">{kicker}</span>
+    <h1 class="h2">{entry.data.title}</h1>
+    <p class="copy" style="margin-top: var(--leading);">{entry.data.summary}</p>
+
+    <hr />
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+
+  {
+    cardIds.length > 0 && (
+      <section class="dark" style="margin-top: calc(2.4 * var(--leading));">
+        <div class="wrap section">
+          <span class="kicker">这张卡今天在公开判断账本上的样子</span>
+          <h2 class="h3">同一条判断，同一份数据——账本上的记账形态。</h2>
+          <div style="margin-top: calc(1.4 * var(--leading));">
+            {cardIds.map((id) => (
+              <JudgmentCard id={id} />
+            ))}
+          </div>
+          <p class="copy" style="margin-top: var(--leading);">
+            全部卡片见 <a href="/research/ledger/">公开判断账本</a>。
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="wrap-narrow" style="padding-block: calc(2.4 * var(--leading));">
+    <p><a class="back" href="/mingjian/">返回明鉴</a></p>
+  </section>
+</BaseLayout>

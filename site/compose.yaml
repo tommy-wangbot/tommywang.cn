@@ -1,0 +1,27 @@
+# 明鉴官网 · 常驻服务编排（OrbStack / Docker Compose）
+# 启动: ./site.sh start    停止: ./site.sh stop
+#
+# 注意：镜像构建完全离线 —— 静态产物由宿主 Node 的 `npm run build` 生成，
+# 容器只负责常驻 preview，不依赖 Docker Hub / npm registry。
+services:
+  site:
+    build: .
+    image: mingjian-site:latest
+    container_name: mingjian-site
+    # 常驻：容器异常退出会自动重启；OrbStack 开机自启后也会自动拉起
+    restart: unless-stopped
+    ports:
+      - "4321:4321"
+    # bind mount 源码目录：改 markdown/astro 文件无需重建镜像，
+    # 之后 ./site.sh rebuild（在宿主重新构建）即可生效
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./astro.config.mjs:/app/astro.config.mjs
+      - ./tsconfig.json:/app/tsconfig.json
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4321/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

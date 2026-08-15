@@ -1,0 +1,27 @@
+---
+import StatusTag from './StatusTag.astro';
+import { recentNotes } from '../lib/notes';
+
+interface Props {
+  limit?: number;
+  showExcerpt?: boolean;
+}
+const { limit, showExcerpt = true } = Astro.props;
+const notes = await recentNotes(limit);
+---
+
+<div class="list">
+  {
+    notes.map((n) => (
+      <a class="item" href={`/notes/${n.slug}/`}>
+        <span class="id">{n.date}</span>
+        <span class="it">{n.title}</span>
+        {showExcerpt && n.excerpt && <p class="ix">{n.excerpt}</p>}
+        {/* 条目本身已是链接，状态标签不再套一层 a（避免嵌套锚点） */}
+        <span class="ist">
+          <StatusTag status={n.status} />
+        </span>
+      </a>
+    ))
+  }
+</div>

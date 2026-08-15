@@ -1,0 +1,27 @@
+---
+import { SITE } from '../data/site';
+interface Props {
+  /** 当前所在栏目：mingjian | research | about | undefined */
+  active?: 'mingjian' | 'research' | 'about';
+}
+const { active } = Astro.props;
+const keyOf = (href: string) => (href.startsWith('/mingjian') ? 'mingjian' : 'research');
+---
+<!-- 内页导航：站名 + 两扇门 + 关于我。关于我只是小字链接，不是第三扇门。 -->
+<nav class="nav" aria-label="主导航">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">
+      <span>{SITE.name}</span>
+    </a>
+    <div class="nav-doors">
+      {
+        SITE.doors.map((d) => (
+          <a href={d.href} aria-current={active === keyOf(d.href) ? 'page' : undefined}>
+            {d.label}
+          </a>
+        ))
+      }
+    </div>
+    <a class="nav-about" href="/about/" aria-current={active === 'about' ? 'page' : undefined}>关于我</a>
+  </div>
+</nav>

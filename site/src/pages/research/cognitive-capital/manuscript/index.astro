@@ -1,0 +1,166 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import StatusTag from '../../../../components/StatusTag.astro';
+import { getCollection } from 'astro:content';
+
+const parts = (await getCollection('manuscript')).sort(
+  (a: any, b: any) => a.data.order - b.data.order
+);
+
+const fmt = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const done = parts.filter((p: any) => p.data.published).length;
+---
+
+<BaseLayout
+  title="认知资本论 · 手稿"
+  active="research"
+  description="《认知资本论》的手稿，边写边公开。已成稿的部分可以整部读完，还在写的部分挂着标题与提要。"
+>
+  <section class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading));">
+    <span class="kicker">认知资本论 · 手稿</span>
+    <h1 class="h2">边写边公开的手稿</h1>
+
+    <div class="prose" style="margin-top: var(--leading);">
+      <p>
+        这里是《认知资本论》的手稿本体，按「部」公开：<strong>序言、五部、尾声，共七个单位</strong>。
+        它不是成品书的预览，而是一份正在生长的稿子——每一部头上都标着写作状态和最后改动的日期，
+        跟这个站上判断卡的「置信度 + 复核日期」是同一套语言：<strong
+          >标成「在写」的地方，就是我自己还没想清楚的地方。</strong
+        >
+      </p>
+      <p>
+        目前 {done} 个单位已成稿可读，其余挂着标题与提要。已公开的部分同样会继续改——
+        改动会体现在各部的日期上。想先看骨架而不是正文，
+        回 <a href="/research/cognitive-capital/">认知资本论</a> 那页，三条公理与五部脉络都在。
+      </p>
+    </div>
+
+    <ol class="parts">
+      {
+        parts.map((p: any) => {
+          const href = `/research/cognitive-capital/manuscript/${p.data.slug}/`;
+          const Tag = p.data.published ? 'a' : 'div';
+          return (
+            <li>
+              <Tag class="part" href={p.data.published ? href : undefined}>
+                <div class="part-head">
+                  <span class="part-no">{String(p.data.order).padStart(2, '0')}</span>
+                  <h2 class="part-title">{p.data.title}</h2>
+                </div>
+                <p class="part-sum">{p.data.summary}</p>
+                <div class="part-foot">
+                  <StatusTag status={p.data.status} />
+                  <span class="part-date">
+                    {p.data.published ? `最后改动 ${fmt(p.data.checked)}` : '正文尚未公开'}
+                  </span>
+                  {p.data.published && <span class="part-go">读这一部 →</span>}
+                </div>
+              </Tag>
+            </li>
+          );
+        })
+      }
+    </ol>
+
+    <p style="margin-top: calc(1.8 * var(--leading));">
+      <a class="back" href="/research/cognitive-capital/">返回认知资本论</a>
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .parts {
+    list-style: none;
+    margin: calc(1.6 * var(--leading)) 0 0;
+    padding: 0;
+    border-top: 2px solid var(--divider);
+  }
+  .parts li {
+    border-bottom: 1px solid var(--divider);
+  }
+  .part {
+    display: block;
+    padding: calc(1.1 * var(--leading)) 0;
+    text-decoration: none;
+    color: inherit;
+    transition: background 180ms ease, padding 180ms ease;
+  }
+  a.part:hover {
+    background: color-mix(in srgb, var(--gold) 8%, var(--paper));
+    padding-inline: 12px;
+  }
+  .part-head {
+    display: grid;
+    grid-template-columns: 3.2em minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+  }
+  .part-no {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-40);
+    font-variant-numeric: tabular-nums;
+  }
+  .part-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(19px, 2.3vw, 24px);
+    line-height: 1.4;
+    margin: 0;
+  }
+  a.part:hover .part-title {
+    color: var(--gold);
+  }
+  .part-sum {
+    margin: 12px 0 0;
+    padding-left: calc(3.2em + 16px);
+    font-size: 14.5px;
+    line-height: 1.8;
+    color: var(--ink-70);
+  }
+  .part-foot {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: var(--half);
+    padding-left: calc(3.2em + 16px);
+  }
+  .part-date {
+    font-family: var(--font-heading);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-55);
+  }
+  .part-go {
+    margin-left: auto;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--ink-55);
+  }
+  a.part:hover .part-go {
+    color: var(--gold);
+  }
+  /* 未公开的部分整体压暗，一眼能和可读的区分开 */
+  div.part .part-title,
+  div.part .part-sum {
+    color: var(--ink-55);
+  }
+
+  @media (max-width: 620px) {
+    .part-head {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .part-sum,
+    .part-foot {
+      padding-left: 0;
+    }
+    .part-go {
+      margin-left: 0;
+    }
+  }
+</style>

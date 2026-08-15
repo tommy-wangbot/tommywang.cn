@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const excerpts = await getCollection('excerpts', (e: any) => !e.data.draft);
+  return excerpts.map((entry: any) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout
+  title={entry.data.title}
+  active="research"
+  description={`《${entry.data.source}》试读：${entry.data.title}`}
+>
+  <article class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading));">
+    <span class="kicker">认知资本论 · 试读</span>
+    <h1 class="h2">{entry.data.title}</h1>
+
+    <hr />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <hr />
+
+    <p><a class="back" href="/research/cognitive-capital/">返回认知资本论</a></p>
+  </article>
+</BaseLayout>

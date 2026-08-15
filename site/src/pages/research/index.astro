@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NoteList from '../../components/NoteList.astro';
+
+/**
+ * 空房间规矩：只列背后已有真内容的方向。
+ * 宏观与投资方向路径已在代码里预留，但不挂牌——各自出现第一篇真内容时再加一行。
+ */
+const questions = [
+  {
+    label: '认知资本论',
+    q: '当知识获取和内容生产越来越便宜，什么能力会变得更稀缺？',
+    to: '/research/cognitive-capital/',
+  },
+  {
+    label: '公开判断账本',
+    q: '一个判断怎样才算合格：依据、置信度、失效条件、认错记录？',
+    to: '/research/ledger/',
+  },
+];
+---
+
+<BaseLayout
+  title="研究与判断"
+  active="research"
+  description="我对 AI、组织与市场的长期判断，以及它们如何被现实修正。"
+>
+  <section class="wrap section">
+    <span class="kicker">研究与判断</span>
+    <h1 class="h2">我持续研究的问题。</h1>
+    <div class="list">
+      {
+        questions.map((x) => (
+          <a class="item" href={x.to}>
+            <span class="id">{x.label}</span>
+            <span class="it">{x.q}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap section" style="border-top: 2px solid var(--divider);">
+    <div class="grid-2">
+      <a class="tile" href="/research/cognitive-capital/">
+        <p class="t">认知资本论</p>
+        <p>旗舰研究。三条公理、五部脉络、两篇试读；约四万字手稿边写边公开。</p>
+        <span class="go">进入 →</span>
+      </a>
+      <a class="tile" href="/research/ledger/">
+        <p class="t">公开判断账本</p>
+        <p>提前公开、带失效条件、可被打脸的判断；问题 → 假设 → 判断的状态迁移公开可见。</p>
+        <span class="go">进入 →</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="wrap section" style="border-top: 2px solid var(--divider);">
+    <span class="kicker">最近在想什么</span>
+    <NoteList limit={5} />
+  </section>
+
+  <section class="wrap section" style="border-top: 2px solid var(--divider);">
+    <p class="copy">
+      这些判断在真实项目里如何生产 → <a href="/mingjian/">工作方法</a>
+    </p>
+  </section>
+</BaseLayout>

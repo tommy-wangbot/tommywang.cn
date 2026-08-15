@@ -1,0 +1,9 @@
+node_modules
+.astro
+.git
+.gitignore
+.DS_Store
+npm-debug.log*
+Dockerfile
+compose.yaml
+site.sh

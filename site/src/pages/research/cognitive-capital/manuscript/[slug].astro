@@ -1,0 +1,398 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import StatusTag from '../../../../components/StatusTag.astro';
+
+export async function getStaticPaths() {
+  const all = (await getCollection('manuscript')).sort(
+    (a: any, b: any) => a.data.order - b.data.order
+  );
+  // 只为已公开正文的部分生成阅读页；未公开的仅出现在索引页上
+  const open = all.filter((e: any) => e.data.published);
+  return open.map((entry: any) => {
+    const i = all.findIndex((e: any) => e.id === entry.id);
+    return {
+      params: { slug: entry.data.slug },
+      props: {
+        entry,
+        prev: all[i - 1] ?? null,
+        next: all[i + 1] ?? null,
+      },
+    };
+  });
+}
+
+const { entry, prev, next } = Astro.props;
+const { Content, headings } = await render(entry);
+
+/** 部内小节：拆分时 ### 已降为 ##，此处只取 depth 2 */
+const toc = headings.filter((h: any) => h.depth === 2);
+
+const fmt = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const linkTo = (p: any) =>
+  p && p.data.published ? `/research/cognitive-capital/manuscript/${p.data.slug}/` : null;
+---
+
+<BaseLayout
+  title={`${entry.data.title} — 认知资本论手稿`}
+  active="research"
+  description={entry.data.summary}
+>
+  <div class="read-progress"><i id="rp"></i></div>
+
+  <div class="reader">
+    <aside class="reader-toc">
+      <nav aria-label="本部目录">
+        <p class="toc-kicker">本部目录</p>
+        <ol>
+          {
+            toc.map((h: any) => (
+              <li>
+                <a href={`#${h.slug}`} data-toc={h.slug}>
+                  {h.text}
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="toc-back"><a href="/research/cognitive-capital/manuscript/">← 全部七部</a></p>
+      </nav>
+    </aside>
+
+    <article class="reader-body">
+      <header class="reader-head">
+        <span class="kicker">认知资本论 · 手稿</span>
+        <h1 class="h2">{entry.data.title}</h1>
+        <p class="lead" style="margin-top: var(--half);">{entry.data.summary}</p>
+        <div class="reader-meta">
+          <StatusTag status={entry.data.status} />
+          <span>最后改动 {fmt(entry.data.checked)}</span>
+        </div>
+      </header>
+
+      {
+        toc.length > 0 && (
+          <details class="toc-mobile">
+            <summary>本部目录（{toc.length} 节）</summary>
+            <ol>
+              {toc.map((h: any) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </details>
+        )
+      }
+
+      <hr />
+
+      <div class="prose manuscript">
+        <Content />
+      </div>
+
+      <hr />
+
+      <nav class="reader-nav">
+        {
+          linkTo(prev) ? (
+            <a class="rn prev" href={linkTo(prev)}>
+              <span class="rn-k">上一部</span>
+              <span class="rn-t">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          linkTo(next) ? (
+            <a class="rn next" href={linkTo(next)}>
+              <span class="rn-k">下一部</span>
+              <span class="rn-t">{next.data.title}</span>
+            </a>
+          ) : next ? (
+            <span class="rn dim">
+              <span class="rn-k">下一部</span>
+              <span class="rn-t">{next.data.title}（还在写）</span>
+            </span>
+          ) : (
+            <span />
+          )
+        }
+      </nav>
+
+      <p style="margin-top: calc(1.4 * var(--leading));">
+        <a class="back" href="/research/cognitive-capital/manuscript/">返回手稿目录</a>
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  /* ── 阅读进度条 ── */
+  .read-progress {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 3px;
+    background: transparent;
+  }
+  .read-progress i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--gold);
+  }
+
+  /* ── 双栏：目录 + 正文 ── */
+  .reader {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: calc(1.6 * var(--leading)) var(--edge) calc(2.4 * var(--leading));
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: start;
+  }
+  .reader-body {
+    max-width: 780px;
+    min-width: 0;
+  }
+
+  .reader-toc {
+    position: sticky;
+    top: calc(var(--leading) + 3px);
+    max-height: calc(100vh - 2 * var(--leading));
+    overflow-y: auto;
+  }
+  .toc-kicker {
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--ink-55);
+    margin: 0 0 var(--half);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--divider);
+  }
+  .reader-toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc;
+  }
+  .reader-toc li {
+    counter-increment: toc;
+  }
+  .reader-toc a {
+    display: block;
+    padding: 9px 0 9px 12px;
+    border-left: 2px solid transparent;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-55);
+    text-decoration: none;
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+  .reader-toc a:hover {
+    color: var(--ink);
+  }
+  .reader-toc a[aria-current='true'] {
+    color: var(--ink);
+    border-left-color: var(--gold);
+    font-weight: 600;
+  }
+  .toc-back {
+    margin: var(--leading) 0 0;
+    padding-top: var(--half);
+    border-top: 1px solid var(--divider);
+  }
+  .toc-back a {
+    font-family: var(--font-heading);
+    font-size: 12.5px;
+    color: var(--ink-55);
+    text-decoration: none;
+  }
+  .toc-back a:hover {
+    color: var(--gold);
+  }
+
+  .reader-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: var(--leading);
+    font-family: var(--font-heading);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-55);
+  }
+
+  /* ── 窄屏目录：纯 CSS 折叠，无脚本 ── */
+  .toc-mobile {
+    display: none;
+    margin-top: var(--leading);
+    border: 1px solid var(--divider);
+  }
+  .toc-mobile summary {
+    padding: 12px 16px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    color: var(--ink-70);
+  }
+  .toc-mobile ol {
+    margin: 0;
+    padding: 0 16px 14px 34px;
+  }
+  .toc-mobile li + li {
+    margin-top: 8px;
+  }
+  .toc-mobile a {
+    font-size: 14px;
+    color: var(--ink-70);
+    text-decoration: none;
+  }
+
+  /* ── 手稿正文微调 ── */
+  .manuscript :global(h2) {
+    scroll-margin-top: calc(1.2 * var(--leading));
+    padding-top: var(--half);
+    border-top: 1px solid var(--divider);
+  }
+  .manuscript :global(.formula) {
+    font-family: var(--font-display);
+    font-size: clamp(17px, 2.2vw, 21px);
+    text-align: center;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    padding: var(--leading) var(--space-4);
+    background: var(--surface);
+    border-left: 4px solid var(--gold);
+  }
+  .manuscript :global(.f) {
+    font-family: var(--font-display);
+    font-style: normal;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .manuscript :global(sup) {
+    font-size: 0.72em;
+  }
+
+  /* ── 上一部 / 下一部 ── */
+  .reader-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+    background: var(--divider);
+    border: 1px solid var(--divider);
+  }
+  /* 首/末部没有上一部或下一部：占位格不能露出网格底色 */
+  .reader-nav > span:empty {
+    background: var(--paper);
+  }
+  .rn {
+    background: var(--paper);
+    padding: var(--leading) clamp(16px, 2.2vw, 24px);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rn.next {
+    text-align: right;
+  }
+  .rn-k {
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--ink-55);
+  }
+  .rn-t {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15.5px;
+    line-height: 1.5;
+  }
+  a.rn:hover {
+    background: var(--surface);
+  }
+  a.rn:hover .rn-t {
+    color: var(--gold);
+  }
+  .rn.dim .rn-t {
+    color: var(--ink-40);
+  }
+
+  @media (max-width: 940px) {
+    .reader {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .reader-toc {
+      display: none;
+    }
+    .toc-mobile {
+      display: block;
+    }
+  }
+  @media (max-width: 620px) {
+    .reader-nav {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rn.next {
+      text-align: left;
+    }
+  }
+</style>
+
+<script>
+  // 阅读进度 + 目录高亮。原生实现，不引任何库。
+  const bar = document.getElementById('rp');
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>('.reader-toc a[data-toc]')
+  );
+  const heads = links
+    .map((a) => document.getElementById(a.dataset.toc!))
+    .filter((el): el is HTMLElement => Boolean(el));
+
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    if (bar) {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+      bar.style.width = pct + '%';
+    }
+    if (heads.length) {
+      // 当前小节 = 最后一个已滚过视口上四分之一的标题
+      const line = window.scrollY + window.innerHeight * 0.25;
+      let idx = 0;
+      for (let i = 0; i < heads.length; i++) {
+        if (heads[i].offsetTop <= line) idx = i;
+        else break;
+      }
+      links.forEach((a, i) =>
+        i === idx ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')
+      );
+    }
+  };
+
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
+</script>

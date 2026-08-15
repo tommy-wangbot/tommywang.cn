@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../data/site';
+---
+
+<BaseLayout
+  title="关于我"
+  active="about"
+  description="我在解决什么问题，我是谁，现在在做什么。"
+>
+  <article class="wrap-narrow about-page">
+    <span class="kicker">关于我</span>
+    <h1 class="h2">先讲问题，再讲这个人。</h1>
+
+    <section>
+      <h2 class="h3">我在解决什么问题</h2>
+      <p>
+        判断正在变成组织最贵、又最没人管理的资产。材料越来越多，选项越来越快，真正稀缺的不是信息，而是：选哪个、为什么、谁负责。我关心的是把这件事做成可追溯、可验证、能持续更新的工作。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="h3">我是谁</h2>
+      <p>
+        我是咨询公司高级顾问，长期做组织和战略咨询，深耕电信、广电这类强监管、重组织的行业。现在把 AI 嵌进自己的判断生产过程：材料怎么入库，判断怎么记账，改判怎么留痕。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="h3">现在在做什么</h2>
+      <p>
+        正在写《认知资本论》，正在公开判断账本，也在真实项目里继续跑这套工作方法。这个站不是产品册，是见面前后可以查证的笔记。
+      </p>
+    </section>
+
+    <section>
+      <h2 class="h3">怎么联系</h2>
+      <p>
+        来信交流：<a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      </p>
+    </section>
+  </article>
+</BaseLayout>

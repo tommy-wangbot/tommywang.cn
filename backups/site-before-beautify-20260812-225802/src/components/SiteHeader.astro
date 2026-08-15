@@ -1,0 +1,26 @@
+---
+import { SITE } from '../data/site';
+
+interface Props {
+  /** 当前所在的门：mingjian | research | undefined */
+  active?: 'mingjian' | 'research';
+}
+const { active } = Astro.props;
+
+const keyOf = (href: string) => (href.startsWith('/mingjian') ? 'mingjian' : 'research');
+---
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">{SITE.name}</a>
+    <div class="nav-doors">
+      {
+        SITE.doors.map((d) => (
+          <a href={d.href} aria-current={active === keyOf(d.href) ? 'page' : undefined}>
+            {d.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StatusTag from '../../components/StatusTag.astro';
+import { SITE } from '../../data/site';
+import { fmtDate } from '../../lib/notes';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes');
+  return notes.map((note: any) => ({ params: { slug: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<BaseLayout bare title={note.data.title} description={note.data.excerpt ?? SITE.tagline}>
+  <!-- 裸页：无导航、无侧栏，仅文章 + 返回 -->
+  <article class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading)) calc(2.4 * var(--leading));">
+    <StatusTag status={note.data.status} cardId={note.data.cardId} />
+
+    <h1 class="display" style="font-size: clamp(28px, 4vw, 44px); margin-top: var(--leading);">
+      {note.data.title}
+    </h1>
+    <p class="muted" style="margin: var(--half) 0 0; font-size: 13.5px; letter-spacing: 0.04em;">
+      {fmtDate(note.data.date)}
+    </p>
+
+    <hr />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <hr />
+
+    <p style="margin: 0;">
+      <a class="back" href="/">返回 {SITE.name}</a>
+    </p>
+  </article>
+</BaseLayout>

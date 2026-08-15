@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { SITE } from '../data/site';
+---
+
+<BaseLayout bare>
+  <!-- 双门首屏：一屏，功能只有分流；无顶部导航 -->
+  <div class="gate-page">
+    <div class="gate">
+      <header class="gate-head">
+        <h1 class="gate-title">{SITE.name}</h1>
+        <p class="gate-sub">{SITE.tagline}</p>
+        <p class="gate-intro">
+          我的工作横跨组织咨询、AI 工作流、宏观与投资研究，但核心一直是同一件事：面对复杂信息，找到真正的问题，形成可以被追问和验证的判断。
+        </p>
+      </header>
+
+      <div class="gate-doors">
+        <!-- 移动端上下堆叠时，明鉴在上 -->
+        <a class="gate-door" href="/mingjian/">
+          <p class="door-name">明鉴</p>
+          <p class="door-desc">我如何在真实项目里，生产、记账、传承判断。</p>
+          <p class="door-go">原始材料进来，可被追问的判断出去 →</p>
+        </a>
+
+        <a class="gate-door" href="/research/">
+          <p class="door-name">研究与判断</p>
+          <p class="door-desc">我对 AI、组织与市场的长期判断，以及它们如何被现实修正。</p>
+          <p class="door-go">提前公开，带失效条件，对错由时间裁决 →</p>
+        </a>
+      </div>
+    </div>
+
+    <SiteFooter seamless />
+  </div>
+</BaseLayout>

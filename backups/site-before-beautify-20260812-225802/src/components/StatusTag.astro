@@ -1,0 +1,18 @@
+---
+interface Props {
+  /** 问题 / 假设 / 判断 */
+  status: '问题' | '假设' | '判断' | string;
+  /** 已入账本时链向对应卡 */
+  cardId?: string;
+}
+const { status, cardId } = Astro.props;
+
+const label = { 问题: '问题 · 我还没有答案', 假设: '假设 · 证据尚不充分', 判断: '判断 · 已入账本' }[
+  status as '问题' | '假设' | '判断'
+] ?? status;
+
+const href = cardId ? `/research/ledger/#card-${cardId}` : undefined;
+const Tag = href ? 'a' : 'span';
+---
+
+<Tag class="status-tag" data-status={status} href={href}>{label}</Tag>
