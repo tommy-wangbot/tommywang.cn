@@ -1,82 +1,90 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { recentNotes } from '../../lib/notes';
-import { CARDS } from '../../data/cards';
-
-const entries = [
-  {
-    path: '/research/ledger/',
-    meta: `${CARDS.length} 张卡 · 定期复核`,
-    title: '公开判断记录',
-    desc: '带编号、置信度和失效条件的判断清单。改判只追加，不删改——包括被自己的数据部分证伪的那些。',
-  },
-  {
-    path: '/research/cognitive-capital/',
-    meta: '约十二万字 · 公开写作中',
-    title: '认知资本论',
-    desc: '一本正在公开写作的书。三条公理与五部脉络先立在这里，章节随写随发。',
-  },
-];
-
-const changes = [
-  {
-    date: '2026-08-15',
-    delta: '新增 4 张',
-    note: '《认知资本论》三公理与两条推论首次立卡：0.88 / 0.74 / 0.70 / 0.75。',
-  },
-  {
-    date: '2026-08-09',
-    delta: '0.60 → 0.45',
-    note: 'JUG-TW-20260809-02 第一轮复核下调并标记 disputed：主机制被社保缴费数据顶住，暂停判定至 2027 年。',
-  },
-];
+import { LEDGER_CARDS, ledgerChanges } from '../../data/cards';
 
 /**
- * 只列长文（kind: 文章）。弱信号在 /notes/。
- * 「判断没有资产化」那篇同时是 /method/ 开头的入口，这里照常挂——
- * 它的归属栏目是文章，方法页只是引用它。
+ * 首屏两个入口：认知资本论在左（1.5 份宽），公开判断记录在右（1 份宽）。
+ * 排序依据：读者对「判断」这个概念陌生，书更容易进入。
  */
+const lead = {
+  path: '/research/cognitive-capital/',
+  meta: '约十二万字 · 公开写作中',
+  title: '认知资本论',
+  desc:
+    '当知道和执行的成本被 AI 压到接近于零，人类还剩下什么东西是真正稀缺、值得押注的？这是一本正在公开写作的书——三条公理与五部脉络先立在这里，章节随写随发，写作过程中的修正与推翻也一并留在页面上。',
+  cta: '读这本书',
+};
+
+const second = {
+  path: '/research/ledger/',
+  meta: `${LEDGER_CARDS.length} 张卡 · 定期复核`,
+  title: '公开判断记录',
+  desc:
+    '把上面那本书里的论断，逐条写成能被现实检验的形式：先说会发生什么，再写清楚出现什么情况就算我错了，错了之后只追加、不删改。',
+  cta: '查账本',
+};
+
+/** 变动流从卡的修订记录自动派生，不再手写数字 */
+const grouped = new Map<string, ReturnType<typeof ledgerChanges>>();
+for (const r of ledgerChanges()) {
+  const rows = grouped.get(r.date) ?? [];
+  rows.push(r);
+  grouped.set(r.date, rows);
+}
+const changes = [...grouped.entries()].slice(0, 3).map(([date, rows]) => {
+  if (rows.length > 1) {
+    return {
+      date,
+      delta: `新增 ${rows.length} 张`,
+      note: `${rows.map((r) => r.card).join('、')} 首次立卡，置信度 ${rows
+        .map((r) => r.confidence.toFixed(2))
+        .join(' / ')}。`,
+    };
+  }
+  const r = rows[0];
+  return {
+    date,
+    delta: r.delta ?? r.type,
+    note: `${r.card} ${r.note}`,
+  };
+});
+
+/** 只列长文（kind: 文章）。弱信号在 /notes/。 */
 const essays = await recentNotes(undefined, '文章');
 ---
 
 <BaseLayout
   title="研究与判断"
   active="research"
-  description="我对 AI、组织、商业与市场的长期观察，以及这些判断后来如何被现实验证或推翻。"
+  description="AI 把知道和执行的成本压到接近零之后，什么还稀缺——一本正在公开写作的书，和一份可被检验的判断记录。"
 >
   <section class="wrap r-open">
     <p class="kicker">研究与判断</p>
-    <h1 class="r-h1">记录我对 AI、组织、商业与市场的长期观察，以及这些判断后来如何被现实验证或推翻。</h1>
+    <h1 class="r-h1">当知道和执行的成本被压到接近于零，人还剩下什么是稀缺的？</h1>
     <p class="r-lede">
-      这里的每一条判断都带编号、置信度和失效条件。改判只追加，不删改——你可以看到我在哪一天、因为什么证据改了主意。
+      这一栏放两样东西：一本正在公开写作的书，把这个问题推到底；一份判断记录，把书里的论断写成能被现实检验的形式。
     </p>
 
     <div class="r-entries">
-      {
-        entries.map((e) => (
-          <a class="r-entry" href={e.path}>
-            <span class="etop">
-              <span class="epath">{e.path}</span>
-              <span class="emeta">{e.meta}</span>
-            </span>
-            <span class="etitle">{e.title}</span>
-            <span class="edesc">{e.desc}</span>
-          </a>
-        ))
-      }
-    </div>
-
-    <div class="r-changes">
-      <p class="r-label">最新记录变动</p>
-      {
-        changes.map((c) => (
-          <div class="crow">
-            <span class="cdate">{c.date}</span>
-            <span class="cdelta">{c.delta}</span>
-            <span class="cnote">{c.note}</span>
-          </div>
-        ))
-      }
+      <a class="r-entry lead" href={lead.path}>
+        <span class="etop">
+          <span class="epath">{lead.path}</span>
+          <span class="emeta">{lead.meta}</span>
+        </span>
+        <span class="etitle">{lead.title}</span>
+        <span class="edesc">{lead.desc}</span>
+        <span class="ego">{lead.cta} →</span>
+      </a>
+      <a class="r-entry" href={second.path}>
+        <span class="etop">
+          <span class="epath">{second.path}</span>
+          <span class="emeta">{second.meta}</span>
+        </span>
+        <span class="etitle">{second.title}</span>
+        <span class="edesc">{second.desc}</span>
+        <span class="ego">{second.cta} →</span>
+      </a>
     </div>
   </section>
 
@@ -96,6 +104,20 @@ const essays = await recentNotes(undefined, '文章');
       ))
     }
     <p class="r-more">还不够格上判断卡的信号与问题 → <a href="/notes/">笔记</a></p>
+  </section>
+
+  <section class="wrap r-changes">
+    <p class="r-label">最新记录变动</p>
+    {
+      changes.map((c) => (
+        <div class="crow">
+          <span class="cdate">{c.date}</span>
+          <span class="cdelta">{c.delta}</span>
+          <span class="cnote">{c.note}</span>
+        </div>
+      ))
+    }
+    <p class="r-more">全部变动留在卡上 → <a href="/research/ledger/">公开判断记录</a></p>
   </section>
 
   <section class="wrap r-foot">
@@ -149,8 +171,15 @@ const essays = await recentNotes(undefined, '文章');
   .r-entry .etitle { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: 0.02em; }
   .r-entry:hover .etitle { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
   .r-entry .edesc { font-size: 15.5px; line-height: 1.85; color: var(--ink-70); max-width: 32em; }
+  .r-entry .ego { margin-top: auto; font-size: 14px; color: var(--ink-70); }
+  .r-entry:hover .ego { color: var(--ink); }
 
-  .r-changes { margin-top: 48px; }
+  /* 主入口：更大的标题与导语，视觉上是「主 + 附」而不是并列两格 */
+  .r-entry.lead { padding: clamp(32px, 3.4vw, 48px); }
+  .r-entry.lead .etitle { font-size: clamp(28px, 3vw, 38px); }
+  .r-entry.lead .edesc { font-size: 17px; line-height: 1.95; max-width: 30em; }
+
+  .r-changes { padding-block: calc(1.6 * var(--leading)) 0; }
   .r-changes .crow {
     display: grid;
     grid-template-columns: 8em 9em minmax(0, 1fr);
@@ -195,7 +224,7 @@ const essays = await recentNotes(undefined, '文章');
   .r-foot { padding-block: calc(1.4 * var(--leading)) calc(2.4 * var(--leading)); }
 
   @media (min-width: 900px) {
-    .r-entries { grid-template-columns: 1fr 1fr; }
+    .r-entries { grid-template-columns: 1.5fr 1fr; align-items: stretch; }
   }
   @media (max-width: 700px) {
     .r-changes .crow { grid-template-columns: 1fr; }

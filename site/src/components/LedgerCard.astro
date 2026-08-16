@@ -1,5 +1,5 @@
 ---
-import type { JudgmentCardData } from '../data/cards';
+import { lastReview, type JudgmentCardData } from '../data/cards';
 
 interface Props {
   card: JudgmentCardData;
@@ -8,18 +8,26 @@ const { card } = Astro.props;
 
 const pct = Math.round(card.confidence * 100);
 const falsifiers = Array.isArray(card.falsifier) ? card.falsifier : [card.falsifier];
-const revisions = card.revisions ?? [];
-const lastRev = revisions.length > 0 ? revisions[revisions.length - 1] : null;
+const lastRev = lastReview(card);
 const basis = card.basis ?? [];
 const anchors = card.anchors ?? [];
 ---
 
-<article class="lcard" id={`card-${card.id}`} data-kind={card.kind}>
+<article
+  class="lcard"
+  id={`card-${card.id}`}
+  data-kind={card.kind}
+  data-conf={card.confidence}
+>
   <header class="lhead">
     <span class="lid">{card.id}</span>
-    <span class="lkind">{card.kind}</span>
+    {card.domain && <span class="lkind">{card.domain}</span>}
     <span class="ltag"><i></i>判断</span>
-    {card.draft && <span class="lflag">待定稿</span>}
+    {
+      card.status && (
+        <span class="lflag">{card.status}{card.statusNote ? ` · ${card.statusNote}` : ''}</span>
+      )
+    }
   </header>
 
   <div class="lbody">
@@ -37,7 +45,7 @@ const anchors = card.anchors ?? [];
     {
       lastRev && (
         <div class="lrev">
-          <p class="rl">复核记录 · {lastRev.date}</p>
+          <p class="rl">复核记录 · {lastRev.date}{lastRev.delta ? ` · ${lastRev.delta}` : ''}</p>
           <p class="rt">{lastRev.note}</p>
         </div>
       )
@@ -53,7 +61,10 @@ const anchors = card.anchors ?? [];
     </div>
 
     <div class="lfoot">
-      <span class="lmeta">入账 {card.openedAt} · 最近复核 {card.reviewedAt}</span>
+      <span class="lmeta">
+        {card.source && <b>来源 · {card.source}</b>}
+        <i>入账 {card.openedAt} · 最近复核 {card.reviewedAt}</i>
+      </span>
       {
         basis.length > 0 && (
           <details class="lmore">
@@ -148,11 +159,13 @@ const anchors = card.anchors ?? [];
     display: flex;
     flex-wrap: wrap;
     gap: 10px 24px;
-    align-items: center;
+    align-items: flex-end;
     padding-top: 16px;
     border-top: 1px solid var(--hair);
   }
-  .lmeta { font-family: var(--font-mono); font-size: 12px; color: #7f97b8; }
+  .lmeta { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 12px; color: #7f97b8; max-width: 46em; }
+  .lmeta b { font-weight: 600; color: var(--dim); }
+  .lmeta i { font-style: normal; }
   .lmore { margin-left: auto; }
   .lmore summary {
     list-style: none;

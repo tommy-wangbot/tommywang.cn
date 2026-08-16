@@ -1,26 +1,30 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import LedgerCard from '../../components/LedgerCard.astro';
-import { CARDS } from '../../data/cards';
+import { LEDGER_CARDS } from '../../data/cards';
 import { QUESTIONS, HYPOTHESES } from '../../data/ledger';
 
-const avg = CARDS.reduce((s, c) => s + c.confidence, 0) / CARDS.length;
-const falsifierCount = CARDS.reduce(
+const cards = LEDGER_CARDS;
+const avg = cards.reduce((s, c) => s + c.confidence, 0) / cards.length;
+const falsifierCount = cards.reduce(
   (s, c) => s + (Array.isArray(c.falsifier) ? c.falsifier.length : 1),
   0,
 );
-const reviewed = CARDS.filter((c) => (c.revisions ?? []).length > 0).length;
+const reviewRounds = cards.reduce(
+  (s, c) => s + (c.revisions ?? []).filter((r) => r.type === '复核').length,
+  0,
+);
 
 const stats = [
-  { n: String(CARDS.length), label: '公开判断卡' },
+  { n: String(cards.length), label: '公开判断卡' },
   { n: avg.toFixed(2), label: '平均置信度' },
   { n: String(falsifierCount), label: '可证伪的失效条件' },
-  { n: String(reviewed), label: '已完成复核的卡' },
+  { n: String(reviewRounds), label: '已完成复核轮次' },
 ];
 
-const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
+const kinds = [...new Set(cards.map((c) => c.kind))].map((k) => ({
   kind: k,
-  n: CARDS.filter((c) => c.kind === k).length,
+  n: cards.filter((c) => c.kind === k).length,
 }));
 ---
 
@@ -48,42 +52,46 @@ const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
         }
       </div>
 
-      <div class="lfilters" role="group" aria-label="按领域筛选">
-        <button type="button" class="chip on" data-kind="">全部 {CARDS.length}</button>
+      <!-- 账本三层：确定性从高到低。写不出失效条件的命题不上卡，停在下两层。 -->
+      <nav class="llayers" aria-label="账本三层">
+        <span class="lnow">判断层 · {cards.length} 张卡（本页上半）</span>
+        <a href="#layer-hypotheses">假设层 · {HYPOTHESES.length} 条 ↓</a>
+        <a href="#layer-questions">问题层 · {QUESTIONS.length} 条 ↓</a>
+      </nav>
+
+      <div class="lfilters" role="group" aria-label="按领域筛选与排序">
+        <button type="button" class="chip on" data-kind="">全部 {cards.length}</button>
         {
           kinds.map((k) => (
             <button type="button" class="chip" data-kind={k.kind}>{k.kind} {k.n}</button>
           ))
         }
+        <button type="button" class="chip sort" data-sort="conf">按置信度排序</button>
       </div>
 
-      <div class="lcards">
-        {CARDS.map((c) => <LedgerCard card={c} />)}
+      <div class="lcards" id="layer-judgments">
+        {cards.map((c) => <LedgerCard card={c} />)}
       </div>
 
       <p class="ldisc">以上为个人研究记录。涉及投资方向的卡片，均不构成投资建议。</p>
     </div>
   </section>
 
-  <!-- 问题层与假设层：写不出失效条件的命题不上卡，停在这两层 -->
-  <section class="wrap lower">
-    <p class="kicker">问题 · 我还没有答案</p>
-    <h2 class="h3">账本上不是每一格都有结论。</h2>
-    <div class="layer">
-      {
-        QUESTIONS.map((q) => (
-          <div class="layer-item" id={`q-${q.id}`}>
-            <p class="q">{q.question}</p>
-            <p class="copy">{q.note}</p>
-          </div>
-        ))
-      }
-    </div>
+  <!-- 下两层：不是账本的附录，是它的边界说明 -->
+  <section class="wrap lower head">
+    <p class="kicker">账本的下两层</p>
+    <h2 class="h3">写不出失效条件的命题不上卡——它们停在这里，也照样公开。</h2>
+    <p class="copy">
+      上半页是判断层：每一条都带编号、置信度和可观察的失效条件。下面两层是还没到这一步的东西。
+      假设层有解释但证据不够；问题层连解释都还没有。三层用同一套规矩记，只是确定性递减。
+    </p>
   </section>
 
-  <section class="wrap lower">
-    <p class="kicker">假设 · 有初步解释，证据不充分</p>
-    <h2 class="h3">这一层写明：我为什么还不敢把它写成判断。</h2>
+  <section class="wrap lower" id="layer-hypotheses">
+    <div class="lhd">
+      <h2 class="h3">假设层</h2>
+      <p>有初步解释，证据不充分。这一层写明：我为什么还不敢把它写成判断。</p>
+    </div>
     {
       HYPOTHESES.map((h) => (
         <div class="hypo" id={`card-${h.id}`}>
@@ -107,14 +115,37 @@ const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
     }
   </section>
 
+  <section class="wrap lower" id="layer-questions">
+    <div class="lhd">
+      <h2 class="h3">问题层</h2>
+      <p>我还没有答案，也还没有解释。账本上不是每一格都有结论。</p>
+    </div>
+    <div class="layer">
+      {
+        QUESTIONS.map((q) => (
+          <div class="layer-item" id={`q-${q.id}`}>
+            <p class="q">{q.question}</p>
+            <p class="copy">{q.note}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
   <section class="wrap lower last">
-    <p><a class="back" href="/research/">返回研究与判断</a></p>
+    <p class="backs">
+      <a class="back" href="#layer-judgments">↑ 回到判断层</a>
+      <a class="back" href="/research/">返回研究与判断</a>
+    </p>
   </section>
 </BaseLayout>
 
 <script>
-  const chips = document.querySelectorAll<HTMLButtonElement>('.lfilters .chip');
-  const cards = document.querySelectorAll<HTMLElement>('.lcards > .lcard');
+  const chips = document.querySelectorAll<HTMLButtonElement>('.lfilters .chip[data-kind]');
+  const sortBtn = document.querySelector<HTMLButtonElement>('.lfilters .chip.sort');
+  const list = document.querySelector<HTMLElement>('.lcards');
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.lcards > .lcard'));
+
   chips.forEach((chip) => {
     chip.addEventListener('click', () => {
       const kind = chip.dataset.kind ?? '';
@@ -125,6 +156,20 @@ const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
       });
     });
   });
+
+  // 按置信度排序（再点一次恢复入账顺序）
+  if (sortBtn && list) {
+    const original = cards.slice();
+    sortBtn.addEventListener('click', () => {
+      const on = sortBtn.classList.toggle('on');
+      const order = on
+        ? cards.slice().sort(
+            (a, b) => Number(b.dataset.conf ?? 0) - Number(a.dataset.conf ?? 0),
+          )
+        : original;
+      order.forEach((c) => list.appendChild(c));
+    });
+  }
 </script>
 
 <style>
@@ -152,7 +197,20 @@ const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
   .lstats .sn { margin: 0; font-family: var(--font-mono); font-size: 32px; font-weight: 700; color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
   .lstats .sl { margin: 8px 0 0; font-size: 12.5px; letter-spacing: 0.1em; color: var(--dim); }
 
-  .lfilters { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .llayers {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+  .llayers .lnow { color: var(--ink-rev); border-bottom: 2px solid var(--gold); padding-bottom: 4px; }
+  .llayers a { color: var(--dim); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+  .llayers a:hover { color: var(--ink-rev); text-decoration-thickness: 3px; }
+
+  .lfilters { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; }
   .lfilters .chip {
     font-family: var(--font-heading);
     font-size: 12.5px;
@@ -166,11 +224,27 @@ const kinds = [...new Set(CARDS.map((c) => c.kind))].map((k) => ({
   }
   .lfilters .chip:hover { color: var(--ink-rev); }
   .lfilters .chip.on { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  .lfilters .chip.sort { margin-left: auto; }
 
   .lcards { margin-top: 32px; display: flex; flex-direction: column; gap: 20px; }
   .ldisc { margin: var(--leading) 0 0; font-size: 12.5px; line-height: 1.75; color: var(--dim); }
 
   .lower { padding-block: calc(1.8 * var(--leading)); }
   .lower .h3 { margin: 0 0 var(--half); }
+  .lower.head { padding-block: calc(2 * var(--leading)) calc(0.8 * var(--leading)); }
+  .lower.head .copy { max-width: 42em; }
+  .lower .lhd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding-bottom: 14px;
+    margin-bottom: calc(1.2 * var(--leading));
+    border-bottom: 2px solid var(--ink);
+  }
+  .lower .lhd .h3 { margin: 0; }
+  .lower .lhd p { margin: 0; font-size: 14.5px; color: var(--ink-70); max-width: 34em; }
   .lower.last { padding-block: 0 calc(2.4 * var(--leading)); }
+  .backs { display: flex; flex-wrap: wrap; gap: 12px 32px; }
 </style>

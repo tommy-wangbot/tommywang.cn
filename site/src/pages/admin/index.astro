@@ -1,0 +1,425 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+/**
+ * 写作台。纯前端：不连数据库、不写服务器、不做鉴权。
+ * 表单在浏览器里生成标准 Markdown（笔记 / 文章）或判断卡 JSON，
+ * 你下载或复制后放进仓库 commit —— 改动全部留在 git 历史里，
+ * 这正是账本「改判只追加、不删改」这条规矩要求的。
+ */
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<BaseLayout title="写作台" bare noindex description="生成标准 Markdown 与判断卡 JSON 的本地表单。">
+  <div class="adm">
+    <header class="ahead">
+      <div class="wrap arow">
+        <span class="abrand">写作台</span>
+        <span class="apath">/admin/</span>
+        <a class="ahome" href="/">← 回站点</a>
+      </div>
+    </header>
+
+    <div class="wrap abody">
+      <p class="alede">
+        填表 → 生成 → 下载或复制 → 放进仓库 commit。没有后台，没有数据库：内容仍然是仓库里的文件，
+        每次改动都留下时间戳和 diff。
+      </p>
+
+      <div class="atabs" role="tablist">
+        <button type="button" class="atab on" data-tab="note">笔记 / 文章（.md）</button>
+        <button type="button" class="atab" data-tab="card">判断卡（cards.json）</button>
+      </div>
+
+      <!-- ========== 笔记 / 文章 ========== -->
+      <section class="apane" data-pane="note">
+        <div class="agrid">
+          <label class="f wide">
+            <span class="fl">标题</span>
+            <input type="text" id="n-title" placeholder="例：数据没有推翻结论，推翻的是机制" />
+          </label>
+
+          <label class="f">
+            <span class="fl">文件名 / 网址段</span>
+            <input type="text" id="n-slug" placeholder="mechanism-not-conclusion" />
+            <span class="fh">英文小写，用连字符。最终地址 /notes/&lt;这里&gt;/</span>
+          </label>
+
+          <label class="f">
+            <span class="fl">日期</span>
+            <input type="date" id="n-date" value={today} />
+          </label>
+
+          <label class="f">
+            <span class="fl">状态</span>
+            <select id="n-status">
+              <option value="问题">问题 · 还没有答案</option>
+              <option value="假设">假设 · 有解释，证据不足</option>
+              <option value="判断">判断 · 已能写出失效条件</option>
+            </select>
+          </label>
+
+          <label class="f">
+            <span class="fl">栏目</span>
+            <select id="n-kind">
+              <option value="笔记">笔记 · 弱信号，挂 /notes/</option>
+              <option value="文章">文章 · 长文，挂 /research/</option>
+            </select>
+          </label>
+
+          <label class="f">
+            <span class="fl">配对判断卡（可空）</span>
+            <input type="text" id="n-card" placeholder="JUG-TW-20260815-02" />
+          </label>
+
+          <label class="f">
+            <span class="fl">草稿</span>
+            <select id="n-draft">
+              <option value="false">否 · 构建后公开</option>
+              <option value="true">是 · 不出现在站点上</option>
+            </select>
+          </label>
+
+          <label class="f wide">
+            <span class="fl">一句摘要</span>
+            <input type="text" id="n-excerpt" placeholder="列表页显示的一句话" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">正文</span>
+            <textarea id="n-body" rows="12" placeholder="Markdown。空行分段。"></textarea>
+          </label>
+        </div>
+
+        <div class="aacts">
+          <button type="button" class="abtn primary" data-gen="note">生成</button>
+          <button type="button" class="abtn" data-copy="n-out">复制</button>
+          <button type="button" class="abtn" data-dl="note">下载 .md</button>
+          <span class="ahint" data-hint="note"></span>
+        </div>
+
+        <pre class="aout" id="n-out">填完上面点「生成」。</pre>
+
+        <p class="afoot">
+          放进 <code>site/src/content/notes/&lt;文件名&gt;.md</code>，然后
+          <code>git add . &amp;&amp; git commit</code>，重新构建即可上线。
+        </p>
+      </section>
+
+      <!-- ========== 判断卡 ========== -->
+      <section class="apane" data-pane="card" hidden>
+        <p class="anote">
+          账本的规矩：写不出可观察的失效条件，就不要立卡——填不出「失效条件」这一栏时，把它写成
+          <b>假设</b> 或 <b>问题</b>，走上面那个表单。
+        </p>
+
+        <div class="agrid">
+          <label class="f">
+            <span class="fl">编号</span>
+            <input type="text" id="c-id" placeholder="JUG-TW-20260816-01" />
+            <span class="fh">JUG-TW-日期-当天序号</span>
+          </label>
+
+          <label class="f">
+            <span class="fl">领域短名（筛选用）</span>
+            <input type="text" id="c-kind" placeholder="认知政治经济学" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">领域全称（卡首显示）</span>
+            <input type="text" id="c-domain" placeholder="认知政治经济学 × 稀缺性演化 × 要素价值分配" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">卡片标题</span>
+            <input type="text" id="c-title" placeholder="一句话概括这张卡赌的是什么" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">判断</span>
+            <textarea id="c-judgment" rows="4" placeholder="完整表述：会发生什么，在什么机制下，什么时间尺度上。"></textarea>
+          </label>
+
+          <label class="f">
+            <span class="fl">置信度</span>
+            <input type="number" id="c-conf" min="0" max="1" step="0.05" value="0.55" />
+          </label>
+
+          <label class="f">
+            <span class="fl">置信度说明</span>
+            <input type="text" id="c-confnote" placeholder="首次立卡 · 2026-08-16" />
+          </label>
+
+          <label class="f">
+            <span class="fl">入账日期</span>
+            <input type="date" id="c-opened" value={today} />
+          </label>
+
+          <label class="f">
+            <span class="fl">争议状态（可空）</span>
+            <input type="text" id="c-status" placeholder="disputed" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">状态说明（可空）</span>
+            <input type="text" id="c-statusnote" placeholder="机制腿已被数据顶住，2027 年前暂停判定" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">主要依据</span>
+            <textarea id="c-basis" rows="6" placeholder="一行一条。"></textarea>
+          </label>
+
+          <label class="f wide">
+            <span class="fl">失效条件 · 出现任一即改判</span>
+            <textarea id="c-fals" rows="5" placeholder="一行一条，必须可观察。"></textarea>
+          </label>
+
+          <label class="f wide">
+            <span class="fl">来源说明</span>
+            <input type="text" id="c-source" placeholder="《认知资本论》第 x 节 ＋ 数据线核实" />
+          </label>
+
+          <label class="f wide">
+            <span class="fl">证据锚点（可空，一行一条）</span>
+            <textarea id="c-anchors" rows="3"></textarea>
+          </label>
+        </div>
+
+        <div class="aacts">
+          <button type="button" class="abtn primary" data-gen="card">生成</button>
+          <button type="button" class="abtn" data-copy="c-out">复制</button>
+          <button type="button" class="abtn" data-dl="card">下载 .json</button>
+          <span class="ahint" data-hint="card"></span>
+        </div>
+
+        <pre class="aout" id="c-out">填完上面点「生成」。</pre>
+
+        <p class="afoot">
+          把生成的对象追加进 <code>site/src/data/cards.json</code> 的 <code>cards</code> 数组，
+          然后 commit。<b>改判时不要覆盖旧卡</b>：只往该卡的 <code>revisions</code> 里追加一条
+          <code>{'{ date, type: "复核", delta, note }'}</code>，并更新 <code>confidence</code> 与
+          <code>reviewedAt</code>。
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  const val = (id: string) => ($(id)?.value ?? '').trim();
+  const lines = (id: string) =>
+    val(id)
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  // tabs
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.atab');
+  tabs.forEach((t) => {
+    t.addEventListener('click', () => {
+      tabs.forEach((x) => x.classList.toggle('on', x === t));
+      document.querySelectorAll<HTMLElement>('.apane').forEach((p) => {
+        p.hidden = p.dataset.pane !== t.dataset.tab;
+      });
+    });
+  });
+
+  const yaml = (s: string) => (/[:#"'\[\]{}]|^\s|\s$/.test(s) ? JSON.stringify(s) : s);
+
+  function buildNote(): string {
+    const fm = [
+      `title: ${yaml(val('n-title') || '未命名')}`,
+      `date: ${val('n-date')}`,
+      `status: ${val('n-status')}`,
+      `kind: ${val('n-kind')}`,
+    ];
+    if (val('n-card')) fm.push(`cardId: ${val('n-card')}`);
+    if (val('n-excerpt')) fm.push(`excerpt: ${yaml(val('n-excerpt'))}`);
+    if (val('n-draft') === 'true') fm.push('draft: true');
+    return `---\n${fm.join('\n')}\n---\n\n${val('n-body')}\n`;
+  }
+
+  function buildCard(): string {
+    const card: Record<string, unknown> = {
+      id: val('c-id'),
+      kind: val('c-kind'),
+    };
+    if (val('c-domain')) card.domain = val('c-domain');
+    card.file = `judgment_cards/${val('c-id')}.md`;
+    if (val('c-status')) {
+      card.status = val('c-status');
+      if (val('c-statusnote')) card.statusNote = val('c-statusnote');
+    }
+    if (val('c-title')) card.title = val('c-title');
+    card.judgment = val('c-judgment');
+    card.confidence = Number(val('c-conf'));
+    if (val('c-confnote')) card.confidenceNote = val('c-confnote');
+    if (lines('c-basis').length) card.basis = lines('c-basis');
+    card.falsifier = lines('c-fals');
+    if (val('c-source')) card.source = val('c-source');
+    card.openedAt = val('c-opened');
+    card.reviewedAt = val('c-opened');
+    card.revisions = [
+      {
+        date: val('c-opened'),
+        type: '入账',
+        note: `首次公开立卡，置信度 ${Number(val('c-conf')).toFixed(2)}。`,
+      },
+    ];
+    if (lines('c-anchors').length) card.anchors = lines('c-anchors');
+    return JSON.stringify(card, null, 2);
+  }
+
+  const outs: Record<string, string> = { note: '', card: '' };
+
+  function warn(kind: string): string {
+    if (kind === 'note') {
+      if (!val('n-title')) return '缺标题。';
+      if (!val('n-slug')) return '缺文件名。';
+      if (!val('n-body')) return '正文是空的。';
+    } else {
+      if (!val('c-id')) return '缺编号。';
+      if (!val('c-judgment')) return '缺判断。';
+      if (!lines('c-fals').length) return '缺失效条件——写不出来就不要立卡。';
+    }
+    return '';
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-gen]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const kind = b.dataset.gen!;
+      const hint = document.querySelector<HTMLElement>(`[data-hint="${kind}"]`)!;
+      const problem = warn(kind);
+      hint.textContent = problem || '已生成。';
+      hint.dataset.bad = problem ? '1' : '';
+      if (problem && kind === 'card') return;
+      outs[kind] = kind === 'note' ? buildNote() : buildCard();
+      document.getElementById(kind === 'note' ? 'n-out' : 'c-out')!.textContent = outs[kind];
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => {
+    b.addEventListener('click', async () => {
+      const el = document.getElementById(b.dataset.copy!)!;
+      await navigator.clipboard.writeText(el.textContent ?? '');
+      const kind = b.dataset.copy === 'n-out' ? 'note' : 'card';
+      const hint = document.querySelector<HTMLElement>(`[data-hint="${kind}"]`)!;
+      hint.dataset.bad = '';
+      hint.textContent = '已复制到剪贴板。';
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-dl]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const kind = b.dataset.dl!;
+      if (!outs[kind]) outs[kind] = kind === 'note' ? buildNote() : buildCard();
+      const name = kind === 'note' ? `${val('n-slug') || 'untitled'}.md` : `${val('c-id') || 'card'}.json`;
+      const blob = new Blob([outs[kind]], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  });
+</script>
+
+<style>
+  .adm { background: var(--paper); min-height: 100vh; }
+  .ahead { border-bottom: 1px solid var(--divider); background: var(--paper); }
+  .arow { display: flex; align-items: baseline; gap: 16px; padding-block: 18px; }
+  .abrand { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: 0.04em; }
+  .apath { font-family: var(--font-mono); font-size: 12px; color: var(--ink-55); }
+  .ahome { margin-left: auto; font-size: 14px; }
+
+  .abody { padding-block: calc(1.4 * var(--leading)) calc(2.4 * var(--leading)); max-width: 980px; }
+  .alede { margin: 0; font-size: 16px; line-height: 1.9; color: var(--ink-70); max-width: 40em; }
+
+  .atabs { display: flex; gap: 0; margin-top: var(--leading); border-bottom: 1px solid var(--divider); }
+  .atab {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: var(--ink-55);
+    cursor: pointer;
+  }
+  .atab:hover { color: var(--ink); }
+  .atab.on { color: var(--ink); border-color: var(--divider); background: var(--paper); margin-bottom: -1px; }
+
+  .apane { padding-top: calc(1.2 * var(--leading)); }
+  .anote {
+    margin: 0 0 var(--leading);
+    padding: 16px 20px;
+    background: var(--surface);
+    font-size: 14.5px;
+    line-height: 1.85;
+    color: var(--ink-70);
+    max-width: 44em;
+  }
+
+  .agrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
+  .f { display: flex; flex-direction: column; gap: 6px; }
+  .f.wide { grid-column: 1 / -1; }
+  .fl { font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--ink-55); }
+  .fh { font-size: 12px; color: var(--ink-55); }
+  .f input,
+  .f select,
+  .f textarea {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--divider);
+    border-radius: 0;
+    padding: 10px 12px;
+  }
+  .f textarea { resize: vertical; }
+  .f input:focus-visible,
+  .f select:focus-visible,
+  .f textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  .aacts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: var(--leading); }
+  .abtn {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .abtn:hover { background: var(--surface); }
+  .abtn.primary { background: var(--ink); color: var(--paper); }
+  .abtn.primary:hover { background: #000; }
+  .ahint { font-size: 13.5px; color: var(--ink-55); }
+  .ahint[data-bad='1'] { color: #b4433f; }
+
+  .aout {
+    margin: var(--leading) 0 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--divider);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow: auto;
+  }
+  .afoot { margin: var(--half) 0 0; font-size: 13.5px; line-height: 1.85; color: var(--ink-55); }
+  .afoot code { font-family: var(--font-mono); font-size: 12.5px; background: var(--surface); padding: 2px 6px; }
+
+  @media (max-width: 760px) {
+    .agrid { grid-template-columns: 1fr; }
+  }
+</style>

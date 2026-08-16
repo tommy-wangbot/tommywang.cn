@@ -56,7 +56,7 @@ export const HYPOTHESES: LedgerHypothesis[] = [
       '大型组织的平均管理层级数在 AI 大规模应用后不减反增；',
       '裁员持续集中在一线执行岗而非中间层。',
     ],
-    confidence: '0.55【待审】',
+    confidence: '0.55 · 假设层估值，未立卡',
     openedAt: '2026-08-03',
     reviewedAt: '2026-08-03',
   },

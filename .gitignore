@@ -9,6 +9,13 @@ node_modules/
 dist/
 .astro/
 
+# 本地脚本与临时备份
+.backup-*/
+site/.backup-*/
+*.backup-*
+site/apply*.sh
+
 # 编辑器
 .vscode/
 .idea/
+
