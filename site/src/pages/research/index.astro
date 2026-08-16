@@ -33,11 +33,12 @@ for (const r of ledgerChanges()) {
   grouped.set(r.date, rows);
 }
 const changes = [...grouped.entries()].slice(0, 3).map(([date, rows]) => {
+  const sorted = rows.slice().sort((a, b) => (a.card < b.card ? -1 : 1));
   if (rows.length > 1) {
     return {
       date,
       delta: `新增 ${rows.length} 张`,
-      note: `${rows.map((r) => r.card).join('、')} 首次立卡，置信度 ${rows
+      note: `${sorted.map((r) => r.card).join('、')} 首次立卡，置信度 ${sorted
         .map((r) => r.confidence.toFixed(2))
         .join(' / ')}。`,
     };

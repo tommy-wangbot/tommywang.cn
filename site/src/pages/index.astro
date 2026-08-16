@@ -17,7 +17,7 @@ const doors = [
     path: '/research/',
     title: '研究与判断',
     keys: '观点 / 研究 / 修正',
-    desc: '记录我对 AI、组织、商业与市场的长期观察，以及这些判断后来如何被现实验证或推翻。',
+    desc: 'AI 把知道和执行的成本压到接近于零之后，人还剩下什么是稀缺的？一本正在公开写作的书，外加一份写明「什么情况算我错了」的记录。',
   },
 ];
 ---
@@ -48,10 +48,13 @@ const doors = [
   <section class="home-ledger dark" aria-labelledby="home-card-h">
     <div class="inner">
       <p class="kicker" id="home-card-h">一张判断长这样</p>
+      <p class="card-note-in">
+        我把重要的判断提前写下来：会发生什么、依据是什么、出现什么情况就算我错了。
+        后来错了的，也留在原处不删——只在下面追加一条改判记录。
+      </p>
       <JudgmentCard id="CS-XINGLAN-01" />
       <p class="card-note-out">
-        每张卡都写明依据、置信度和失效条件，改判追加记录、不删旧版 →
-        <a href="/research/ledger/">公开判断记录</a>
+        全部记录 → <a href="/research/ledger/">公开判断记录</a>
       </p>
     </div>
   </section>
@@ -74,3 +77,13 @@ const doors = [
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .home-ledger .card-note-in {
+    margin: var(--half) 0 var(--leading);
+    font-size: 16px;
+    line-height: 1.95;
+    color: var(--dim);
+    max-width: 38em;
+  }
+</style>
