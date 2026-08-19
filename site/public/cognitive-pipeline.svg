@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 480" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #fbfbfa; stroke: #201e1d; stroke-width: 1.5; }
+      .title-main { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-weight: 700; font-size: 16px; fill: #201e1d; letter-spacing: 0.05em; }
+      .subtitle { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 11px; fill: #716e6b; letter-spacing: 0.08em; }
+      
+      /* Card Styles */
+      .card-machine { fill: #ffffff; stroke: #201e1d; stroke-width: 1.5; }
+      .card-human { fill: #0e1a2b; stroke: #e8b64c; stroke-width: 2; }
+      
+      /* Tag Styles */
+      .tag-machine { fill: #eae9e9; }
+      .tag-machine-text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 10.5px; font-weight: 600; fill: #484542; }
+      .tag-human { fill: #e8b64c; }
+      .tag-human-text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 10.5px; font-weight: 700; fill: #0e1a2b; }
+      
+      /* Step Headers */
+      .step-num { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; fill: #716e6b; }
+      .step-num-human { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; fill: #e8b64c; }
+      .step-title { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-weight: 700; font-size: 14.5px; fill: #201e1d; }
+      .step-title-human { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-weight: 700; font-size: 14.5px; fill: #ffffff; }
+      
+      /* Step Body */
+      .step-desc { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11.5px; fill: #524f4c; line-height: 1.6; }
+      .step-desc-human { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11.5px; fill: #c5d4ea; line-height: 1.6; }
+      
+      /* Arrows and Connectors */
+      .arrow { stroke: #201e1d; stroke-width: 1.5; fill: none; }
+      .arrow-head { fill: #201e1d; }
+      .feedback-line { stroke: #999590; stroke-width: 1.2; stroke-dasharray: 4,4; fill: none; }
+      .feedback-text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 10px; fill: #716e6b; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="arrow-head" />
+    </marker>
+    <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#e8b64c" />
+    </marker>
+    <marker id="arrow-dim" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#999590" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Outer Frame -->
+  <rect x="8" y="8" width="904" height="464" class="bg" />
+
+  <!-- Top Header Bar -->
+  <text x="36" y="44" class="title-main">认知流水线：人机协同的五阶研判外骨骼</text>
+  <text x="36" y="64" class="subtitle">COGNITIVE PIPELINE · FROM CHAOTIC REALITY TO DEFENSIBLE DECISION</text>
+  
+  <line x1="36" y1="78" x2="884" y2="78" stroke="#201e1d" stroke-width="1" />
+
+  <!-- ==================== 5 STAGE CARDS ==================== -->
+
+  <!-- Stage 1 -->
+  <g transform="translate(36, 100)">
+    <rect x="0" y="0" width="156" height="270" class="card-machine" />
+    <rect x="12" y="14" width="70" height="18" class="tag-machine" />
+    <text x="47" y="27" text-anchor="middle" class="tag-machine-text">机器主导 90%</text>
+    
+    <text x="12" y="52" class="step-num">PHASE 01</text>
+    <text x="12" y="72" class="step-title">感知与特征提取</text>
+    <line x1="12" y1="84" x2="144" y2="84" stroke="#eae9e9" stroke-width="1.5" />
+    
+    <text x="12" y="106" class="step-desc">· 混乱材料原子化解构</text>
+    <text x="12" y="128" class="step-desc">· 隔离声明/实测/推断</text>
+    <text x="12" y="150" class="step-desc">· 识别口径矛盾与断点</text>
+    <text x="12" y="172" class="step-desc">· 证据链可复查溯源</text>
+    
+    <rect x="12" y="210" width="132" height="46" fill="#f5f4f1" stroke="#e0deda" stroke-width="1" />
+    <text x="20" y="228" class="step-desc" font-size="10.5" fill="#716e6b">输出产物：</text>
+    <text x="20" y="244" class="step-desc" font-weight="600" font-size="11" fill="#201e1d">结构化事实基座</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 194 235 L 210 235" class="arrow" marker-end="url(#arrow)" />
+
+  <!-- Stage 2 -->
+  <g transform="translate(212, 100)">
+    <rect x="0" y="0" width="156" height="270" class="card-machine" />
+    <rect x="12" y="14" width="70" height="18" class="tag-machine" />
+    <text x="47" y="27" text-anchor="middle" class="tag-machine-text">机器主导 85%</text>
+    
+    <text x="12" y="52" class="step-num">PHASE 02</text>
+    <text x="12" y="72" class="step-title">竞争假设与测压</text>
+    <line x1="12" y1="84" x2="144" y2="84" stroke="#eae9e9" stroke-width="1.5" />
+    
+    <text x="12" y="106" class="step-desc">· 构建互斥假设 A/B/C</text>
+    <text x="12" y="128" class="step-desc">· 拒绝单线线性偏见</text>
+    <text x="12" y="150" class="step-desc">· 红队极限对抗攻击</text>
+    <text x="12" y="172" class="step-desc">· 暴露最脆弱前提命门</text>
+    
+    <rect x="12" y="210" width="132" height="46" fill="#f5f4f1" stroke="#e0deda" stroke-width="1" />
+    <text x="20" y="228" class="step-desc" font-size="10.5" fill="#716e6b">输出产物：</text>
+    <text x="20" y="244" class="step-desc" font-weight="600" font-size="11" fill="#201e1d">假设空间与脆弱报告</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 370 235 L 386 235" class="arrow" marker-end="url(#arrow)" />
+
+  <!-- Stage 3 (Human Core Node - Highlighted) -->
+  <g transform="translate(388, 92)">
+    <rect x="0" y="0" width="160" height="286" class="card-human" />
+    <rect x="14" y="16" width="76" height="20" class="tag-human" />
+    <text x="52" y="30" text-anchor="middle" class="tag-human-text">人类专有 100%</text>
+    
+    <text x="14" y="56" class="step-num-human">PHASE 03 · 核心卡点</text>
+    <text x="14" y="78" class="step-title-human">研判关卡与下注</text>
+    <line x1="14" y1="90" x2="146" y2="90" stroke="#2a466e" stroke-width="1.5" />
+    
+    <text x="14" y="114" class="step-desc-human">· 注入隐性经验与情境</text>
+    <text x="14" y="136" class="step-desc-human">· 选定下注 (Current Bet)</text>
+    <text x="14" y="158" class="step-desc-human">· 标定绝对置信度 (0~1)</text>
+    <text x="14" y="180" class="step-desc-human">· 权责对等，肉身担责</text>
+    
+    <rect x="14" y="218" width="132" height="52" fill="#152841" stroke="#e8b64c" stroke-width="1" />
+    <text x="22" y="238" class="step-desc-human" font-size="10.5" fill="#9db2d0">核心交付物：</text>
+    <text x="22" y="256" class="step-desc-human" font-weight="700" font-size="12" fill="#e8b64c">防守型判断卡 (JUG)</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <path d="M 550 235 L 566 235" class="arrow" marker-end="url(#arrow)" />
+
+  <!-- Stage 4 -->
+  <g transform="translate(568, 100)">
+    <rect x="0" y="0" width="156" height="270" class="card-machine" />
+    <rect x="12" y="14" width="70" height="18" class="tag-machine" />
+    <text x="47" y="27" text-anchor="middle" class="tag-machine-text">机器主导 80%</text>
+    
+    <text x="12" y="52" class="step-num">PHASE 04</text>
+    <text x="12" y="72" class="step-title">公理推导与沙盘</text>
+    <line x1="12" y1="84" x2="144" y2="84" stroke="#eae9e9" stroke-width="1.5" />
+    
+    <text x="12" y="106" class="step-desc">· 调用专业方法论公理</text>
+    <text x="12" y="128" class="step-desc">· 自洽推导组织/方案/制度</text>
+    <text x="12" y="150" class="step-desc">· 模拟各方利益答辩对抗</text>
+    <text x="12" y="172" class="step-desc">· 检验现实防守强度</text>
+    
+    <rect x="12" y="210" width="132" height="46" fill="#f5f4f1" stroke="#e0deda" stroke-width="1" />
+    <text x="20" y="228" class="step-desc" font-size="10.5" fill="#716e6b">输出产物：</text>
+    <text x="20" y="244" class="step-desc" font-weight="600" font-size="11" fill="#201e1d">落地方案与答辩预案</text>
+  </g>
+
+  <!-- Arrow 4 -> 5 -->
+  <path d="M 726 235 L 742 235" class="arrow" marker-end="url(#arrow)" />
+
+  <!-- Stage 5 -->
+  <g transform="translate(744, 100)">
+    <rect x="0" y="0" width="140" height="270" class="card-machine" />
+    <rect x="12" y="14" width="70" height="18" class="tag-machine" />
+    <text x="47" y="27" text-anchor="middle" class="tag-machine-text">机器主导 75%</text>
+    
+    <text x="12" y="52" class="step-num">PHASE 05</text>
+    <text x="12" y="72" class="step-title">反证雷达与演化</text>
+    <line x1="12" y1="84" x2="128" y2="84" stroke="#eae9e9" stroke-width="1.5" />
+    
+    <text x="12" y="106" class="step-desc">· 布设失效触发器</text>
+    <text x="12" y="128" class="step-desc">· 监听双向反证信号</text>
+    <text x="12" y="150" class="step-desc">· 持续比对现实偏差</text>
+    <text x="12" y="172" class="step-desc">· 动态驱动判断演化</text>
+    
+    <rect x="12" y="210" width="116" height="46" fill="#f5f4f1" stroke="#e0deda" stroke-width="1" />
+    <text x="18" y="228" class="step-desc" font-size="10.5" fill="#716e6b">沉淀资产：</text>
+    <text x="18" y="244" class="step-desc" font-weight="600" font-size="11" fill="#201e1d">决策账本 (Ledger)</text>
+  </g>
+
+  <!-- Bottom Feedback Loop Line -->
+  <path d="M 814 380 L 814 415 L 468 415 L 468 388" class="feedback-line" marker-end="url(#arrow-gold)" />
+  <text x="641" y="432" text-anchor="middle" class="feedback-text">反证信号触发偏差预警 ➔ 驱动判断卡版本演化 (Strengthen / Weaken / Invalidate)</text>
+
+  <!-- Footer Legend -->
+  <rect x="36" y="405" width="12" height="12" class="card-machine" />
+  <text x="54" y="415" class="feedback-text" fill="#201e1d">机器算力：负责高通量解析、推演与监控</text>
+
+  <rect x="236" y="405" width="12" height="12" fill="#0e1a2b" stroke="#e8b64c" stroke-width="1.5" />
+  <text x="254" y="415" class="feedback-text" fill="#201e1d">人类意志：负责下注、置信度与承担后果</text>
+</svg>
