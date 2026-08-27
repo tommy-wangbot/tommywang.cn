@@ -19,3 +19,11 @@ site/apply*.sh
 .vscode/
 .idea/
 
+
+# 百度推送脚本（含明文 TOKEN）与其运行状态，一律不入库
+push_baidu.sh
+site/push_baidu.sh
+push_baidu.done
+push_baidu.log
+.env
+site/.env
