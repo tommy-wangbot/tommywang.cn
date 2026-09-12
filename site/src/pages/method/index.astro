@@ -113,6 +113,31 @@ const cases = (await getCollection('cases', (e: any) => !e.data.draft)).sort(
       </p>
     </section>
 
+    <!-- 第一段之后 · 整台机器一眼看完 -->
+    <section class="wrap m-map">
+      <p class="m-label">一张图看完整套系统</p>
+      <figure class="m-figure">
+        <div class="m-figscroll">
+        <img
+          src="/diagrams/judgment-line.svg"
+          alt="判断的生产线：原始材料经原料提纯、人工质检闸门进入决策依据账本；账本向右经证据强制长出判断卡，判断卡再进入红队答辩预演；红队暴露的缺口与新事实一起进入变更重审，补依据、记改判后回到账本，形成闭环；左侧双脑协同持续消化推理，判断卡跨项目提炼成规律沉淀。"
+          width="1240"
+          height="740"
+          decoding="async"
+          fetchpriority="high"
+        />
+        </div>
+        <figcaption>
+          中间那本账是唯一的长期资产，两侧工序都为它服务。红队答辩不是终点——被问倒的地方和新事实
+          一起回到账本，补上依据、记下改判，下一版判断从这里长出来。少了底下那条回路，
+          账本三个月后就变成档案室。
+          <a class="m-figlink" href="/diagrams/judgment-line.html" target="_blank" rel="noopener">
+            打开可点的版本 ↗
+          </a>
+        </figcaption>
+      </figure>
+    </section>
+
     <section class="wrap m-block">
       <h2 class="m-h2">为什么围绕"判断"而不是"写材料"来建系统</h2>
       <p class="copy m-p">
@@ -364,6 +389,43 @@ const cases = (await getCollection('cases', (e: any) => !e.data.draft)).sort(
 <style>
   .method { padding-bottom: calc(2.4 * var(--leading)); }
   .m-open { padding-block: calc(2 * var(--leading)) 0; }
+
+  .m-map { padding-block: calc(1.4 * var(--leading)) 0; }
+  .m-figure { margin: 16px 0 0; }
+  .m-figscroll { max-width: 960px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .m-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--divider);
+    border-radius: 4px;
+  }
+  /* 窄屏：让图横向可滚，而不是把字缩到看不清 */
+  @media (max-width: 760px) {
+    .m-figscroll { margin-inline: calc(-1 * var(--gutter, 20px)); padding-inline: var(--gutter, 20px); }
+    .m-figure img { width: 760px; max-width: none; }
+  }
+  .m-figure figcaption {
+    margin-top: 14px;
+    max-width: 40em;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--ink-70);
+  }
+  .m-figlink {
+    display: inline-block;
+    margin-left: 4px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    white-space: nowrap;
+  }
+  @media (max-width: 700px) {
+    .m-figure img { border-radius: 3px; }
+    .m-figure figcaption { font-size: 14.5px; }
+  }
   .m-sub { margin: 20px 0 0; font-size: 19px; line-height: 1.85; color: var(--ink-70); max-width: 32em; }
   .m-quote {
     margin: 44px 0 0;
