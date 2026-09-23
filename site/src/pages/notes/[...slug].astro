@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusTag from '../../components/StatusTag.astro';
 import { SITE } from '../../data/site';
 import { fmtDate } from '../../lib/notes';
+import { LEDGER_CARDS } from '../../data/cards';
 
 export async function getStaticPaths() {
   const notes = await getCollection('notes');
@@ -13,6 +14,7 @@ export async function getStaticPaths() {
 const { note } = Astro.props;
 const { Content } = await render(note);
 const carded = Boolean(note.data.cardId);
+const publicCard = LEDGER_CARDS.some((card) => card.id === note.data.cardId);
 ---
 
 <BaseLayout
@@ -24,7 +26,7 @@ const carded = Boolean(note.data.cardId);
     <div class="nmeta">
       <StatusTag status={note.data.status} cardId={note.data.cardId} />
       <span class="nd">
-        {fmtDate(note.data.date)} · {carded ? `配对卡 ${note.data.cardId}` : '未立卡'}
+        {fmtDate(note.data.date)} · {carded ? `${note.data.status === '假设' ? '已立卡 · 待验证' : '配对卡'} ${note.data.cardId}` : '未立卡'}
       </span>
     </div>
 
@@ -34,7 +36,11 @@ const carded = Boolean(note.data.cardId);
       note.data.status === '假设' && (
         <div class="nhypo">
           <p>
-            先把话说在前面：<strong>这一篇是假设，不是判断。</strong>它有一个我觉得挺有解释力的机制，但支持它的证据还不足以让我据此行动，所以它现在只能停在假设层，不上判断卡。
+            {carded ? (
+              <>先把话说在前面：<strong>这一篇已立判断卡，仍待验证。</strong>我已把核心假设、竞争解释、反证条件和验证办法写进卡片。立卡是开始跟踪和检验，不代表组织层面的效果已经得到证明。</>
+            ) : (
+              <>先把话说在前面：<strong>这一篇是假设，不是判断。</strong>它有一个我觉得挺有解释力的机制，但支持它的证据还不足以让我据此行动，所以它现在只能停在假设层，不上判断卡。</>
+            )}
           </p>
         </div>
       )
@@ -47,9 +53,13 @@ const carded = Boolean(note.data.cardId);
     <div class="nfoot">
       <p class="fl">这篇文章的账本状态</p>
       {
-        carded ? (
+        publicCard ? (
           <p class="ft">
             这条判断已经入账，可在 <a href={`/research/ledger/#card-${note.data.cardId}`}>公开判断记录</a> 上看到它的置信度、失效条件与复核历史。改判只追加，不删改。
+          </p>
+        ) : carded ? (
+          <p class="ft">
+            这篇文章已建立判断卡 {note.data.cardId}，目前为草稿、待验证。卡片记录了竞争解释、反证条件与首轮验证办法，完整卡片暂未公开。立卡不等于证据已经充分。
           </p>
         ) : (
           <p class="ft">

@@ -1,4 +1,5 @@
 ---
+import { LEDGER_CARDS } from '../data/cards';
 interface Props {
   /** 笔记：问题 / 假设 / 判断；手稿：成稿 / 在写 / 待改 */
   status: '问题' | '假设' | '判断' | '成稿' | '在写' | '待改' | string;
@@ -17,7 +18,7 @@ const LABELS: Record<string, string> = {
 };
 const label = LABELS[status] ?? status;
 
-const href = cardId ? `/research/ledger/#card-${cardId}` : undefined;
+const href = cardId && LEDGER_CARDS.some((card) => card.id === cardId) ? `/research/ledger/#card-${cardId}` : undefined;
 const Tag = href ? 'a' : 'span';
 ---
 
