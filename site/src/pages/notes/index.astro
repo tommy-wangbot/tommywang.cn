@@ -27,7 +27,7 @@ const notes = await recentNotes(undefined, '笔记');
             <span class="it">{n.title}</span>
             {n.excerpt && <p class="ix">{n.excerpt}</p>}
             <span class="ist">
-              <StatusTag status={n.status} cardId={n.cardId} />
+              <StatusTag status={n.status} cardIds={n.cardIds} />
             </span>
           </a>
         ))

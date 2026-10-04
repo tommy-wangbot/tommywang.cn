@@ -100,7 +100,11 @@ const essays = await recentNotes(undefined, '文章');
           <span class="etitle">{n.title}</span>
           <span class="status-tag" data-status={n.status}>{n.status}</span>
           {n.excerpt && <p class="elede">{n.excerpt}</p>}
-          <span class="epair">{n.cardId ? `${n.status === '假设' ? '已立卡 · 待验证' : '配对卡'} · ${n.cardId}` : '未立卡'}</span>
+          <span class="epair">{
+            n.cardIds.length > 0
+              ? `${n.status === '假设' ? '已立卡 · 待验证' : '配对卡'} · ${n.cardIds.join('、')}`
+              : '未立卡'
+          }</span>
         </a>
       ))
     }

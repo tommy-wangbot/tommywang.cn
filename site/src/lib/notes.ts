@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { LEDGER_CARDS } from '../data/cards';
 
 export interface NoteItem {
   slug: string;
@@ -7,8 +8,22 @@ export interface NoteItem {
   status: string;
   /** 文章（长文，/research/）或 笔记（弱信号，/notes/） */
   kind: '文章' | '笔记';
-  cardId?: string;
+  /** 已挂的判断卡。单卡与多卡在这里统一成数组，渲染侧不用再分支 */
+  cardIds: string[];
   excerpt?: string;
+}
+
+/** 取一篇内容挂的全部卡号：cardId（单）与 cardIds（多）合并去重 */
+export function cardIdsOf(data: any): string[] {
+  const list: string[] = [];
+  if (data?.cardId) list.push(data.cardId);
+  for (const id of data?.cardIds ?? []) if (!list.includes(id)) list.push(id);
+  return list;
+}
+
+/** 卡号 → 卡标题（用在页脚与列表，标明挂的是哪几条判断） */
+export function cardTitle(id: string): string | undefined {
+  return LEDGER_CARDS.find((c) => c.id === id)?.title;
 }
 
 /** 统一日期格式 YYYY-MM-DD（避免时区导致的差一天） */
@@ -30,7 +45,7 @@ export async function recentNotes(limit?: number, kind?: '文章' | '笔记'): P
     date: fmtDate(e.data.date),
     status: e.data.status,
     kind: e.data.kind ?? '笔记',
-    cardId: e.data.cardId,
+    cardIds: cardIdsOf(e.data),
     excerpt: e.data.excerpt,
   }));
   if (kind) list = list.filter((n) => n.kind === kind);

@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusTag from '../../components/StatusTag.astro';
 import { SITE } from '../../data/site';
-import { fmtDate } from '../../lib/notes';
+import { fmtDate, cardIdsOf, cardTitle } from '../../lib/notes';
 import { LEDGER_CARDS } from '../../data/cards';
 
 export async function getStaticPaths() {
@@ -13,8 +13,11 @@ export async function getStaticPaths() {
 
 const { note } = Astro.props;
 const { Content } = await render(note);
-const carded = Boolean(note.data.cardId);
-const publicCard = LEDGER_CARDS.some((card) => card.id === note.data.cardId);
+const ids = cardIdsOf(note.data);
+const publicIds = ids.filter((id) => LEDGER_CARDS.some((card) => card.id === id));
+const carded = ids.length > 0;
+const publicCard = publicIds.length > 0;
+const isHypo = note.data.status === '假设';
 ---
 
 <BaseLayout
@@ -24,9 +27,9 @@ const publicCard = LEDGER_CARDS.some((card) => card.id === note.data.cardId);
 >
   <article class="wrap-narrow note">
     <div class="nmeta">
-      <StatusTag status={note.data.status} cardId={note.data.cardId} />
+      <StatusTag status={note.data.status} cardIds={ids} />
       <span class="nd">
-        {fmtDate(note.data.date)} · {carded ? `${note.data.status === '假设' ? '已立卡 · 待验证' : '配对卡'} ${note.data.cardId}` : '未立卡'}
+        {fmtDate(note.data.date)} · {carded ? `${isHypo ? '已立卡 · 待验证' : '配对卡'} ${ids.join('、')}` : '未立卡'}
       </span>
     </div>
 
@@ -54,17 +57,35 @@ const publicCard = LEDGER_CARDS.some((card) => card.id === note.data.cardId);
       <p class="fl">这篇文章的账本状态</p>
       {
         publicCard ? (
-          <p class="ft">
-            这条判断已经入账，可在 <a href={`/research/ledger/#card-${note.data.cardId}`}>公开判断记录</a> 上看到它的置信度、失效条件与复核历史。改判只追加，不删改。
-          </p>
+          publicIds.length === 1 ? (
+            <p class="ft">
+              这条判断已经入账，可在 <a href={`/research/ledger/#card-${publicIds[0]}`}>公开判断记录</a> 上看到它的置信度、失效条件与复核历史。改判只追加，不删改。
+            </p>
+          ) : (
+            <p class="ft">
+              这一篇的论断已分成 {publicIds.length} 条判断入账，都可在 <a href="/research/ledger/">公开判断记录</a> 上查看置信度、失效条件与复核历史：
+            </p>
+          )
         ) : carded ? (
           <p class="ft">
-            这篇文章已建立判断卡 {note.data.cardId}，目前为草稿、待验证。卡片记录了竞争解释、反证条件与首轮验证办法，完整卡片暂未公开。立卡不等于证据已经充分。
+            这篇文章已建立判断卡 {ids.join('、')}，目前为草稿、待验证。卡片记录了竞争解释、反证条件与首轮验证办法，完整卡片暂未公开。立卡不等于证据已经充分。
           </p>
         ) : (
           <p class="ft">
             这一篇还没有立卡。升级为判断时会在 <a href="/research/ledger/">公开判断记录</a> 上立卡，本页顶部的状态标签同步更新；放弃也记一笔，不删本页。
           </p>
+        )
+      }
+      {
+        publicIds.length > 1 && (
+          <ul class="fcl">
+            {publicIds.map((id) => (
+              <li>
+                <a href={`/research/ledger/#card-${id}`}>{cardTitle(id) ?? id}</a>
+                <span class="fcid">{id}</span>
+              </li>
+            ))}
+          </ul>
         )
       }
     </div>
@@ -93,5 +114,10 @@ const publicCard = LEDGER_CARDS.some((card) => card.id === note.data.cardId);
   .nfoot { margin-top: calc(1.8 * var(--leading)); padding-top: calc(1.2 * var(--leading)); border-top: 2px solid var(--ink); }
   .nfoot .fl { margin: 0 0 12px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; color: var(--ink-55); }
   .nfoot .ft { margin: 0; font-size: 15.5px; line-height: 1.9; color: var(--ink-70); max-width: 46em; }
+  /* 一篇挂多张卡时，逐条列出卡标题与卡号 */
+  .nfoot .fcl { list-style: none; margin: 14px 0 0; padding: 0; }
+  .nfoot .fcl li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--divider); }
+  .nfoot .fcl a { font-size: 15.5px; }
+  .nfoot .fcl .fcid { font-family: var(--font-mono); font-size: 12px; color: var(--ink-55); }
   .nback { margin: calc(1.4 * var(--leading)) 0 0; }
 </style>

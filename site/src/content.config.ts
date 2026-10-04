@@ -17,8 +17,10 @@ const notes = defineCollection({
      * 一份内容只属于一个栏目，避免三处重复。
      */
     kind: z.enum(['文章', '笔记']).default('笔记'),
-    /** 已入账本时链向对应判断卡 */
+    /** 已入账本时链向对应判断卡（单卡；多卡用 cardIds） */
     cardId: z.string().optional(),
+    /** 一篇内容挂多张判断卡时用它（如系列文章、一个复合判断） */
+    cardIds: z.array(z.string()).optional(),
     /** 一句摘要，用于列表 */
     excerpt: z.string().optional(),
     draft: z.boolean().default(false),
