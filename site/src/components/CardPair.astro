@@ -1,0 +1,94 @@
+---
+import { CARDS } from '../data/cards';
+
+interface Props {
+  /** 本文对应的判断卡号（含未公开的草稿卡） */
+  ids: string[];
+}
+
+const { ids } = Astro.props;
+
+/**
+ * 三种去向，按卡的登记信息决定，不靠卡号猜：
+ * - 公开卡（LEDGER_CARDS） → 公开判断记录的卡片锚点
+ * - 案例卡（offLedger）    → 卡上登记的 link.href（一般指向项目案例页）
+ * - 未登记 / 草稿卡        → 不给链接，标"未公开"
+ */
+const rows = ids.map((id) => {
+  const card = CARDS.find((c) => c.id === id);
+  if (!card) return { id, title: undefined, href: undefined, note: '未公开' };
+  if (card.offLedger) return { id, title: card.title, href: card.link?.href, note: card.link?.label ? '案例卡' : '未公开' };
+  return { id, title: card.title, href: `/research/ledger/#card-${id}`, note: undefined };
+});
+
+const openCount = rows.filter((r) => r.href).length;
+---
+
+{
+  rows.length > 0 && (
+    <aside class="cards-pair" aria-label="本文对应的判断卡">
+      <p class="cp-label">
+        本文对应的判断卡 · {rows.length} 张{openCount < rows.length ? `（${openCount} 张已公开）` : ''}
+      </p>
+      <ul>
+        {rows.map((r) => (
+          <li>
+            {r.href ? <a href={r.href}>{r.title ?? r.id}</a> : <span class="cp-draft">{r.title ?? r.id}</span>}
+            {r.title && <span class="cp-id">{r.id}</span>}
+            {r.note && <span class="cp-tag">{r.note}</span>}
+          </li>
+        ))}
+      </ul>
+      <p class="cp-note">
+        有链接的卡都能查到当前押注、置信度、最脆弱的前提，以及出现什么信号就作废。
+        {' '}
+        <a href="/research/ledger/">公开判断记录 →</a>
+      </p>
+    </aside>
+  )
+}
+
+<style>
+  .cards-pair {
+    margin-top: 32px;
+    padding: 18px 22px 20px;
+    background: var(--surface);
+    border-left: 3px solid var(--gold);
+  }
+  .cards-pair .cp-label {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--ink-55);
+  }
+  .cards-pair ul { margin: 10px 0 0; padding: 0; list-style: none; }
+  .cards-pair li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: 7px 0;
+  }
+  .cards-pair li + li { border-top: 1px solid var(--divider); }
+  .cards-pair li a { font-size: 16px; font-weight: 600; }
+  .cards-pair .cp-draft { font-size: 16px; font-weight: 600; color: var(--ink-55); }
+  .cards-pair .cp-id { font-family: var(--font-mono); font-size: 12px; color: var(--ink-55); }
+  .cards-pair .cp-tag {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-55);
+    border: 1px solid var(--divider);
+    padding: 1px 7px;
+  }
+  .cards-pair .cp-note {
+    margin: 12px 0 0;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink-70);
+    max-width: 44em;
+  }
+</style>
