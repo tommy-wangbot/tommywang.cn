@@ -440,6 +440,22 @@ a.tile:hover .t { text-decoration: underline; text-decoration-thickness: 2px; te
   .prose table { display: block; width: max-content; max-width: 100%; overflow-x: auto; font-size: 13.5px; }
 }
 
+/* ── 正文插图 ──
+   图与图注（figure/figcaption）。窄屏时图与正文同宽，宽屏时图可以越出
+   正文栏一点，让图里的字回到可读字号——越出量按视口算，始终留在安全边距内。 */
+.prose figure { margin: 0; }
+.prose figure img { width: 100%; margin: 0; background: var(--paper); }
+.prose figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ink-55);
+  max-width: 46em;
+}
+@media (min-width: 1000px) {
+  .prose .figure-wide { width: min(1040px, calc(100vw - 2 * var(--edge))); margin-inline: auto; }
+}
+
 /* ── 返回链接 ── */
 .back {
   display: inline-flex;

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280"/>
+    </marker>
+    <marker id="arwTeal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="46" text-anchor="middle" font-size="25" font-weight="700" fill="#111827">两次外部化，同一个动作</text>
+  <text x="500" y="76" text-anchor="middle" font-size="14" fill="#6b7280">把一种人类能力从肉身里抽出来，沉淀为可共享的基础设施</text>
+
+  <!-- ================= Row 1: 体力外部化 ================= -->
+  <text x="56" y="126" font-size="15" font-weight="700" fill="#475569">肌肉外部化</text>
+  <text x="56" y="147" font-size="11.5" fill="#94a3b8">19 世纪 · 动力机器</text>
+
+  <rect x="56" y="166" width="200" height="66" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="156" y="193" text-anchor="middle" font-size="13.5" font-weight="600" fill="#334155">体力</text>
+  <text x="156" y="213" text-anchor="middle" font-size="11.5" fill="#94a3b8">受限于肌肉的生物学极限</text>
+
+  <line x1="264" y1="199" x2="330" y2="199" stroke="#6b7280" stroke-width="1.8" marker-end="url(#arw)"/>
+  <text x="297" y="187" text-anchor="middle" font-size="11.5" fill="#6b7280">外置</text>
+
+  <rect x="338" y="166" width="240" height="66" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="458" y="193" text-anchor="middle" font-size="13.5" font-weight="600" fill="#334155">蒸汽机 · 电力 · 流水线</text>
+  <text x="458" y="213" text-anchor="middle" font-size="11.5" fill="#64748b">公共物理网络</text>
+
+  <line x1="586" y1="199" x2="652" y2="199" stroke="#6b7280" stroke-width="1.8" marker-end="url(#arw)"/>
+  <text x="619" y="187" text-anchor="middle" font-size="11.5" fill="#6b7280">人的新位置</text>
+
+  <rect x="660" y="166" width="284" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="802" y="193" text-anchor="middle" font-size="13.5" font-weight="600" fill="#334155">控制能量的阀门</text>
+  <text x="802" y="213" text-anchor="middle" font-size="11.5" fill="#94a3b8">肉身仍是那个不可拆的环节</text>
+
+  <!-- divider -->
+  <line x1="56" y1="266" x2="944" y2="266" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="6 6"/>
+
+  <!-- ================= Row 2: 认知外部化 ================= -->
+  <text x="56" y="312" font-size="15" font-weight="700" fill="#0f766e">认知外部化</text>
+  <text x="56" y="333" font-size="11.5" fill="#94a3b8">21 世纪 · 生成式 AI</text>
+
+  <rect x="56" y="352" width="200" height="66" rx="8" fill="#f0fdfa" stroke="#5eead4" stroke-width="1.4"/>
+  <text x="156" y="379" text-anchor="middle" font-size="13.5" font-weight="600" fill="#0f766e">认知</text>
+  <text x="156" y="399" text-anchor="middle" font-size="11.5" fill="#0d9488">受限于注意力 · 记忆 · 推理速度</text>
+
+  <line x1="264" y1="385" x2="330" y2="385" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arwTeal)"/>
+  <text x="297" y="373" text-anchor="middle" font-size="11.5" fill="#0f766e">外置</text>
+
+  <rect x="338" y="352" width="240" height="66" rx="8" fill="#ccfbf1" stroke="#14b8a6" stroke-width="1.4"/>
+  <text x="458" y="379" text-anchor="middle" font-size="13.5" font-weight="600" fill="#0f766e">记忆 · 推理 · 协作</text>
+  <text x="458" y="399" text-anchor="middle" font-size="11.5" fill="#0d9488">可调用的认知基础设施</text>
+
+  <line x1="586" y1="385" x2="652" y2="385" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arwTeal)"/>
+  <text x="619" y="373" text-anchor="middle" font-size="11.5" fill="#0f766e">人的新位置</text>
+
+  <rect x="660" y="352" width="284" height="66" rx="8" fill="#fff7ed" stroke="#fb923c" stroke-width="1.8"/>
+  <text x="802" y="379" text-anchor="middle" font-size="13.5" font-weight="700" fill="#9a3412">判断与担责</text>
+  <text x="802" y="399" text-anchor="middle" font-size="11.5" fill="#c2410c">更窄，也更硬</text>
+
+  <!-- ================= Bottom: scarcity migration ================= -->
+  <text x="56" y="466" font-size="14" font-weight="700" fill="#111827">稀缺性只搬家，不消失</text>
+  <text x="56" y="486" font-size="11.5" fill="#9ca3af">每一次技术摧毁一种稀缺性，都在它的上游制造出新的稀缺性</text>
+
+  <rect x="56" y="502" width="200" height="40" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <text x="156" y="527" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1d4ed8">信息稀缺</text>
+
+  <line x1="264" y1="522" x2="306" y2="522" stroke="#9ca3af" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="314" y="502" width="200" height="40" rx="7" fill="#eef2ff" stroke="#a5b4fc" stroke-width="1.3"/>
+  <text x="414" y="527" text-anchor="middle" font-size="12.5" font-weight="600" fill="#4338ca">注意力 · 检索整合</text>
+
+  <line x1="522" y1="522" x2="564" y2="522" stroke="#9ca3af" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="572" y="502" width="200" height="40" rx="7" fill="#fff7ed" stroke="#fb923c" stroke-width="1.8"/>
+  <text x="672" y="527" text-anchor="middle" font-size="12.5" font-weight="700" fill="#9a3412">判断</text>
+
+  <line x1="780" y1="522" x2="822" y2="522" stroke="#fb923c" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="866" y="519" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">AI 越强</text>
+  <text x="866" y="536" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">判断越贵</text>
+</svg>
