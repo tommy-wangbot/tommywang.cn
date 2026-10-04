@@ -413,7 +413,7 @@ a.tile:hover .t { text-decoration: underline; text-decoration-thickness: 2px; te
 /* 先清掉浏览器默认外边距，再由下面的 `> * + *` 统一给节奏。
    必须用 :where() 压低特异性并写在前面——否则 `.prose p`(0,1,1)
    会盖过 `.prose > * + *`(0,1,0)，把段间距全部清零。 */
-.prose :where(p, ul, ol) { margin-block: 0; }
+.prose :where(p, ul, ol, figure) { margin-block: 0; }
 .prose > * + * { margin-top: var(--leading); }
 .prose h2 { font-size: clamp(22px, 2.6vw, 26px); color: var(--ink); margin-top: calc(1.8 * var(--leading)); }
 .prose h3 { font-size: clamp(19px, 2.1vw, 21px); color: var(--ink); margin-top: calc(1.4 * var(--leading)); }
@@ -441,19 +441,15 @@ a.tile:hover .t { text-decoration: underline; text-decoration-thickness: 2px; te
 }
 
 /* ── 正文插图 ──
-   图与图注（figure/figcaption）。窄屏时图与正文同宽，宽屏时图可以越出
-   正文栏一点，让图里的字回到可读字号——越出量按视口算，始终留在安全边距内。 */
-.prose figure { margin: 0; }
+   图、图注与正文同宽；段间距由上面的 > * + * 统一控制。 */
+.prose figure { max-width: 100%; margin-inline: 0; }
 .prose figure img { width: 100%; margin: 0; background: var(--paper); }
 .prose figcaption {
   margin-top: 10px;
   font-size: 14px;
   line-height: 1.75;
   color: var(--ink-55);
-  max-width: 46em;
-}
-@media (min-width: 1000px) {
-  .prose .figure-wide { width: min(1040px, calc(100vw - 2 * var(--edge))); margin-inline: auto; }
+  max-width: 100%;
 }
 
 /* ── 返回链接 ── */
