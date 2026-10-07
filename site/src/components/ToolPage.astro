@@ -1,0 +1,74 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// 可带走模板页：预览（渲染后的 md）＋ 复制全文 ＋ 下载 Word。
+// 内容源 src/data/tools/<slug>.md；Word 由 scripts/make_tool_docx.py 生成到 public/templates/<slug>.docx
+interface Props { slug: string; title: string; description: string; docName: string; kicker?: string }
+const { slug, title, description, docName, kicker = '工作方法 · 可带走的模板' } = Astro.props;
+const raw = fs.readFileSync(path.resolve(process.cwd(), `src/data/tools/${slug}.md`), 'utf-8');
+---
+
+<BaseLayout title={title} active="method" description={description}>
+  <article class="wrap jt">
+    <p class="kicker">{kicker}</p>
+    <div class="jt-actions">
+      <button type="button" id="copy-btn" class="jt-btn jt-btn-primary">复制全文（Markdown）</button>
+      <a class="jt-btn" href={`/templates/${slug}.docx`} download={docName}>下载 Word</a>
+      <span id="copy-msg" class="jt-msg" role="status" aria-live="polite"></span>
+    </div>
+    <div class="prose jt-body"><slot /></div>
+    <script type="text/plain" id="raw-md" set:html={raw.replace(/<\/script/gi, '<\\/script')}></script>
+    <p class="jt-back">
+      这套方法的完整工序 → <a href="/method/">工作方法</a>
+    </p>
+  </article>
+
+  <script is:inline>
+    (function () {
+      var btn = document.getElementById('copy-btn');
+      var msg = document.getElementById('copy-msg');
+      var src = document.getElementById('raw-md');
+      if (!btn || !src) return;
+      function done(t) { msg.textContent = t; setTimeout(function () { msg.textContent = ''; }, 2500); }
+      function fallback(text) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done(ok ? '已复制全文' : '复制失败，请手动选中页面文字');
+      }
+      btn.addEventListener('click', function () {
+        var text = src.textContent;
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(function () { done('已复制全文'); }, function () { fallback(text); });
+        } else { fallback(text); }
+      });
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .jt { padding-block: calc(2 * var(--leading)) calc(2.4 * var(--leading)); max-width: 46em; }
+  .jt-actions { margin-top: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .jt-btn {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px;
+    font-family: var(--font-heading); font-size: 15px; font-weight: 600;
+    color: var(--ink); background: transparent; border: 1.5px solid var(--ink);
+    text-decoration: none; cursor: pointer;
+  }
+  .jt-btn:hover { background: var(--surface); }
+  .jt-btn-primary { background: var(--ink); color: var(--paper); }
+  .jt-btn-primary:hover { background: var(--ink); opacity: 0.88; }
+  .jt-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .jt-msg { font-size: 14px; color: var(--ink-70); }
+  .jt-body { margin-top: 28px; }
+  .jt-body :global(h1) { font-family: var(--font-display); font-size: clamp(28px, 3.4vw, 40px); line-height: 1.32; color: var(--ink); margin: 0; }
+  .jt-body :global(pre) { white-space: pre-wrap; word-break: break-word; font-size: 14px; }
+  .jt-back { margin: calc(1.6 * var(--leading)) 0 0; padding-top: var(--leading); border-top: 1px solid var(--divider); font-size: 15.5px; color: var(--ink-70); }
+  @media (max-width: 600px) { .jt-btn { width: 100%; justify-content: center; } }
+</style>

@@ -1,0 +1,170 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// 内容源：src/data/judgment-card-template.md（页面与 public/templates 下的 .docx 同源；改后须重新生成 docx）
+const file = path.resolve(process.cwd(), 'src/data/judgment-card-template.md');
+const full = fs.readFileSync(file, 'utf-8');
+const m = full.match(/```markdown\n([\s\S]*?)\n```/);
+const blank = m ? m[1] : '';
+if (!blank) throw new Error('judgment-card-template.md 中未找到空白模板代码块');
+
+const checks = [
+  ['问题是一句问句吗？', '不是问句的"问题"，通常是伪装的结论'],
+  ['假设至少两个吗？', '只有一个，说明你在确认自己，不是在判断'],
+  ['押注是明确选项吗？', '"视情况而定"等于没押'],
+  ['置信度是数字吗？', '"比较有把握"没法被检验，也没法被校准'],
+  ['最脆弱的假设写了吗？', '写不出来，说明还没找到命门'],
+  ['失效触发器是"可观察的事实"吗？', '"效果不好"不可观察；"连续三个月 X 指标低于 Y"才可观察'],
+  ['证据锚点全部有出处吗？', '找不到出处 → 降格为「待观察」，不许写成结论'],
+  ['有效期填了吗？', '判断会过期，必须写进卡里，不能靠记性'],
+];
+---
+
+<BaseLayout
+  title="判断卡标准模板"
+  active="method"
+  description="一页纸判断卡模板：十二个字段、八条自查，可直接复制或下载 Word。给重大、有后果、会被追问的判断做记录。"
+>
+  <article class="wrap jt">
+    <p class="kicker">工作方法 · 可带走的模板</p>
+    <h1 class="jt-h1">判断卡 · 标准模板</h1>
+    <p class="jt-lede">
+      给一个<b>重大、有后果、会被追问</b>的判断做记录。复制下面的空白模板，填完就是一张卡。
+      <b>填不满，说明这件事还没想清楚，不要下注。</b>
+    </p>
+
+    <div class="jt-actions">
+      <button type="button" id="copy-btn" class="jt-btn jt-btn-primary">复制 Markdown</button>
+      <a class="jt-btn" href="/templates/judgment-card-template.docx" download="判断卡标准模板.docx">下载 Word（含自查与示例）</a>
+      <span id="copy-msg" class="jt-msg" role="status" aria-live="polite"></span>
+    </div>
+
+    <pre class="jt-pre" id="tpl"><code>{blank}</code></pre>
+    <p class="jt-note">
+      字段取自我自己使用的判断系统，保留核心十二项，去掉了内部管理字段。
+    </p>
+
+    <h2 class="jt-h2">填完自查：八条，有一条不过就别发出去</h2>
+    <div class="jt-checks">
+      {checks.map((c, i) => (
+        <div class="jt-check">
+          <span class="jt-no">{String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <p class="jt-q">{c[0]}</p>
+            <p class="jt-w">{c[1]}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="jt-h2">四条填写纪律</h2>
+    <ol class="jt-rules">
+      <li><b>依据不能为空。</b>找不到出处的想法，只能降级为"待观察"，不许写成结论。</li>
+      <li><b>有效期写进制度，不靠记性。</b>到期未复核自动降级为"观察中"（默认 90 天；高频议题 14 天）。</li>
+      <li><b>改判只追加，不覆盖。</b>旧卡留着，另写一条：改判前押什么、改判后押什么、为什么变。</li>
+      <li><b>允许"暂不下注"，但要写清在等什么信号。</b></li>
+    </ol>
+
+    <p class="jt-back">
+      一张真实的卡长什么样 → <a href="/research/ledger/">公开判断记录</a>　·
+      这套方法的完整工序 → <a href="/method/">工作方法</a>
+    </p>
+  </article>
+
+  <script is:inline>
+    (function () {
+      var btn = document.getElementById('copy-btn');
+      var msg = document.getElementById('copy-msg');
+      var src = document.querySelector('#tpl code');
+      if (!btn || !src) return;
+      function done(t) {
+        msg.textContent = t;
+        setTimeout(function () { msg.textContent = ''; }, 2500);
+      }
+      function fallback(text) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done(ok ? '已复制空白模板' : '复制失败，请手动选中上方文字');
+      }
+      btn.addEventListener('click', function () {
+        var text = src.textContent;
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(
+            function () { done('已复制空白模板'); },
+            function () { fallback(text); }
+          );
+        } else {
+          fallback(text);
+        }
+      });
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .jt { padding-block: calc(2 * var(--leading)) calc(2.4 * var(--leading)); max-width: 46em; }
+  .jt-h1 {
+    margin: 20px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.32;
+  }
+  .jt-lede { margin: 20px 0 0; font-size: 18px; line-height: 1.9; color: var(--ink-70); }
+  .jt-actions { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .jt-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 20px;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .jt-btn:hover { background: var(--surface); }
+  .jt-btn-primary { background: var(--ink); color: var(--paper); }
+  .jt-btn-primary:hover { background: var(--ink); opacity: 0.88; }
+  .jt-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .jt-msg { font-size: 14px; color: var(--ink-70); }
+  .jt-pre {
+    margin: 24px 0 0;
+    padding: 20px 22px;
+    background: var(--surface);
+    border-left: 3px solid var(--ink);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .jt-note { margin: 14px 0 0; font-size: 14.5px; color: var(--ink-55); line-height: 1.8; }
+  .jt-h2 { margin: calc(1.8 * var(--leading)) 0 0; font-family: var(--font-heading); font-size: 21px; line-height: 1.5; }
+  .jt-checks { margin-top: 16px; border-top: 2px solid var(--ink); }
+  .jt-check { display: grid; grid-template-columns: 2.4em minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+  .jt-no { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-55); padding-top: 4px; }
+  .jt-q { margin: 0; font-weight: 600; line-height: 1.7; }
+  .jt-w { margin: 2px 0 0; font-size: 15px; line-height: 1.8; color: var(--ink-70); }
+  .jt-rules { margin: 16px 0 0; padding-left: 1.4em; line-height: 1.9; font-size: 16.5px; }
+  .jt-rules li { margin-bottom: 8px; }
+  .jt-back { margin: calc(1.6 * var(--leading)) 0 0; padding-top: var(--leading); border-top: 1px solid var(--divider); font-size: 15.5px; color: var(--ink-70); }
+  @media (max-width: 600px) {
+    .jt-btn { width: 100%; justify-content: center; }
+    .jt-pre { font-size: 12.5px; padding: 16px; }
+  }
+</style>
