@@ -25,8 +25,8 @@ export async function getStaticPaths() {
 const { entry, prev, next } = Astro.props;
 const { Content, headings } = await render(entry);
 
-/** 部内小节：拆分时 ### 已降为 ##，此处只取 depth 2 */
-const toc = headings.filter((h: any) => h.depth === 2);
+/** 部内小节：只取二级标题；脚注的辅助标题不计入章节。 */
+const toc = headings.filter((h: any) => h.depth === 2 && h.slug !== 'footnote-label');
 
 const fmt = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

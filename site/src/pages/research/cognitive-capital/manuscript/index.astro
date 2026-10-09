@@ -31,7 +31,7 @@ const done = parts.filter((p: any) => p.data.published).length;
         >
       </p>
       <p>
-        目前 {done} 个单位已成稿可读，其余挂着标题与提要。已公开的部分同样会继续改——
+        目前 {done} 个单位已成稿可读{done < parts.length ? '，其余挂着标题与提要。' : '。全书七个单位的正文均已公开。'}已公开的部分同样会继续改——
         改动会体现在各部的日期上。想先看骨架而不是正文，
         回 <a href="/research/cognitive-capital/">认知资本论</a> 那页，三条公理与五部脉络都在。
       </p>
