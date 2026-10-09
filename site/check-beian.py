@@ -10,9 +10,9 @@ MPS_NO = "冀公网安备%s号" % MPS_CODE
 MPS_URL = "https://beian.mps.gov.cn/#/query/webSearch?code=" + MPS_CODE
 NAME = "王少怀的研究笔记"
 SKIP = ("baidu_verify_", "BingSiteAuth")  # 搜索引擎验证文件，不是页面
-# 豁免：整页带 noindex 的（改址跳转页 /mingjian/、本地写作台 /admin/），
-# 以及 archify 生成的独立交互图 diagrams/（无页脚、无备案名，2026-10-09 已知缺口，见 deploy.sh 说明）。
-EXEMPT_PREFIX = ("diagrams/",)
+# 豁免：整页带 noindex 的（改址跳转页 /mingjian/、本地写作台 /admin/）。
+# diagrams/ 下 archify 生成的交互图已手工补备案页脚；重新生成会丢，丢了就被这道闸拦下。
+EXEMPT_PREFIX = ()
 
 dist = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "dist")
 pages = [p for p in sorted(dist.rglob("*.html")) if not p.name.startswith(SKIP)]
@@ -45,4 +45,4 @@ if problems:
     for m in problems:
         print("  - " + m, file=sys.stderr)
     sys.exit(1)
-print("  ✓ 备案硬闸通过：%d 个页面检查、%d 个豁免（noindex 页与 diagrams/）" % (len(pages) - exempt, exempt))
+print("  ✓ 备案硬闸通过：%d 个页面检查、%d 个豁免（noindex 页）" % (len(pages) - exempt, exempt))
