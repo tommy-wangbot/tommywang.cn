@@ -8,54 +8,54 @@ const parts = (await getCollection('manuscript')).sort(
 );
 
 const fmt = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 
-const done = parts.filter((p: any) => p.data.published).length;
+const done = parts.filter((p: any) => p.data.status === '成稿').length;
+
+// 所有已公开部里最晚的 checked 日期
+const latest = parts
+  .filter((p: any) => p.data.published)
+  .map((p: any) => p.data.checked as Date)
+  .sort((a: Date, b: Date) => b.getTime() - a.getTime())[0];
 ---
 
 <BaseLayout
   title="认知资本论 · 手稿"
   active="research"
-  description="《认知资本论》的手稿，边写边公开。已成稿的部分可以整部读完，还在写的部分挂着标题与提要。"
+  description="《认知资本论》的手稿，按部公开，每部标注写作状态与最后改动日期。"
 >
-  <section class="wrap-narrow" style="padding-block: calc(2.2 * var(--leading));">
+  <section class="wrap" style="padding-block: calc(2.2 * var(--leading));">
     <span class="kicker">认知资本论 · 手稿</span>
     <h1 class="h2">边写边公开的手稿</h1>
 
-    <div class="prose" style="margin-top: var(--leading);">
-      <p>
-        这里是《认知资本论》的手稿本体，按「部」公开：<strong>序言、五部、尾声，共七个单位</strong>。
-        它不是成品书的预览，而是一份正在生长的稿子——每一部头上都标着写作状态和最后改动的日期，
-        跟这个站上判断卡的「置信度 + 复核日期」是同一套语言：<strong
-          >标成「在写」的地方，就是我自己还没想清楚的地方。</strong
-        >
+    <div class="head">
+      <p class="overview">
+        {done} / {parts.length} 已成稿{latest && ` · 最近改动 ${fmt(latest)}`}
       </p>
-      <p>
-        目前 {done} 个单位已成稿可读{done < parts.length ? '，其余挂着标题与提要。' : '。全书七个单位的正文均已公开。'}已公开的部分同样会继续改——
-        改动会体现在各部的日期上。想先看骨架而不是正文，
-        回 <a href="/research/cognitive-capital/">认知资本论</a> 那页，三条公理与五部脉络都在。
-      </p>
+      <div class="prose">
+        <p>这里是《认知资本论》的手稿本体，按「部」公开：序言、五部、尾声，共 {parts.length} 个部分。它不是成品书的预览，而是一份还在改的稿子：每一部标着写作状态，已公开的再标最后改动日期，与判断卡的「置信度 + 复核日期」是同一套语言。<strong>标成「在写」的地方，就是我自己还没想清楚的地方。</strong></p>
+        <p>已公开的部分也会继续改。{done < parts.length ? '其余单位挂着标题与提要。' : ''}想先看骨架，可回<a href="/research/cognitive-capital/">认知资本论</a>那页，三条公理与五部脉络都在。</p>
+      </div>
     </div>
 
-    <ol class="parts">
+    <ol class="parts" role="list">
       {
         parts.map((p: any) => {
           const href = `/research/cognitive-capital/manuscript/${p.data.slug}/`;
           const Tag = p.data.published ? 'a' : 'div';
           return (
             <li>
-              <Tag class="part" href={p.data.published ? href : undefined}>
+              <Tag class="part" href={p.data.published ? href : undefined} aria-labelledby={p.data.published ? `t-${p.data.slug} d-${p.data.slug}` : undefined}>
                 <div class="part-head">
-                  <span class="part-no">{String(p.data.order).padStart(2, '0')}</span>
-                  <h2 class="part-title">{p.data.title}</h2>
+                  <span class="part-no" aria-hidden="true">{String(p.data.order).padStart(2, '0')}</span>
+                  <h2 class="part-title" id={`t-${p.data.slug}`}>{p.data.title}</h2>
                 </div>
                 <p class="part-sum">{p.data.summary}</p>
                 <div class="part-foot">
                   <StatusTag status={p.data.status} />
-                  <span class="part-date">
+                  <span class="part-date" id={`d-${p.data.slug}`}>
                     {p.data.published ? `最后改动 ${fmt(p.data.checked)}` : '正文尚未公开'}
                   </span>
-                  {p.data.published && <span class="part-go">读这一部 →</span>}
                 </div>
               </Tag>
             </li>
@@ -71,96 +71,116 @@ const done = parts.filter((p: any) => p.data.published).length;
 </BaseLayout>
 
 <style>
+  .head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--half) 40px;
+    margin-top: var(--leading);
+  }
+  .head .prose {
+    min-width: 0;
+    max-width: 46em;
+  }
+  .overview {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--ink-70);
+  }
+  @media (min-width: 1040px) {
+    .head {
+      grid-template-columns: minmax(0, 46em) auto;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .overview {
+      grid-column: 2;
+      grid-row: 1;
+      white-space: nowrap;
+    }
+    .head .prose {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+
+  /* 目录：卡片网格。宽屏约 3 栏，中屏 2 栏，手机 1 栏 */
   .parts {
     list-style: none;
     margin: calc(1.6 * var(--leading)) 0 0;
     padding: 0;
-    border-top: 2px solid var(--divider);
-  }
-  .parts li {
-    border-bottom: 1px solid var(--divider);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+    gap: 16px;
   }
   .part {
-    display: block;
-    padding: calc(1.1 * var(--leading)) 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    padding: calc(0.9 * var(--leading)) 22px calc(0.8 * var(--leading));
+    border: 1px solid color-mix(in srgb, var(--divider) 55%, transparent);
     text-decoration: none;
     color: inherit;
-    transition: background 180ms ease, padding 180ms ease;
+    transition: background 180ms ease;
   }
   a.part:hover {
     background: var(--surface);
-    padding-inline: 12px;
   }
   .part-head {
-    display: grid;
-    grid-template-columns: 3.2em minmax(0, 1fr);
-    gap: 16px;
-    align-items: baseline;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
   .part-no {
     font-family: var(--font-mono);
     font-size: 13px;
-    color: var(--ink-40);
+    color: var(--ink-70);
     font-variant-numeric: tabular-nums;
   }
   .part-title {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: clamp(19px, 2.3vw, 24px);
+    font-size: clamp(19px, 2.1vw, 22px);
     line-height: 1.4;
     margin: 0;
   }
   a.part:hover .part-title {
-    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
   }
   .part-sum {
-    margin: 12px 0 0;
-    padding-left: calc(3.2em + 16px);
+    margin: 12px 0 var(--half);
     font-size: 14.5px;
     line-height: 1.8;
     color: var(--ink-70);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    overflow: hidden;
   }
   .part-foot {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px 14px;
     flex-wrap: wrap;
-    margin-top: var(--half);
-    padding-left: calc(3.2em + 16px);
+    margin-top: auto;
   }
   .part-date {
     font-family: var(--font-heading);
     font-size: 12.5px;
     letter-spacing: 0.04em;
-    color: var(--ink-55);
-  }
-  .part-go {
-    margin-left: auto;
-    font-family: var(--font-heading);
-    font-size: 13px;
-    letter-spacing: 0.04em;
-    color: var(--ink-55);
-  }
-  a.part:hover .part-go {
-    color: var(--ink);
+    color: var(--ink-70);
   }
   /* 未公开的部分整体压暗，一眼能和可读的区分开 */
   div.part .part-title,
   div.part .part-sum {
     color: var(--ink-55);
   }
-
-  @media (max-width: 620px) {
-    .part-head {
-      grid-template-columns: 1fr;
-      gap: 4px;
-    }
-    .part-sum,
-    .part-foot {
-      padding-left: 0;
-    }
-    .part-go {
-      margin-left: 0;
-    }
+  div.part {
+    border-style: dashed;
   }
 </style>
