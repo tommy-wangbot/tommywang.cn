@@ -1,23 +1,32 @@
 ---
 import { SITE } from '../data/site';
+import { Image } from 'astro:assets';
+import bear from '../assets/brand-bear.png';
 interface Props {
   /** 当前所在栏目：method | research | notes | about | undefined */
   active?: 'method' | 'research' | 'notes' | 'about';
 }
 const { active } = Astro.props;
+const brandSubject = '研究笔记';
+const brandOwner = SITE.name.slice(0, -brandSubject.length);
 const keyOf = (href: string) => {
   if (href.startsWith('/method')) return 'method';
   if (href.startsWith('/research')) return 'research';
   return 'notes';
 };
 ---
-<!-- 内页导航：站名 + 三个栏目 + 关于我。关于我只是小字链接，不是第四个栏目。 -->
-<nav class="nav" aria-label="主导航">
-  <div class="nav-inner">
-    <a class="nav-brand" href="/">
-      <span>{SITE.name}</span>
+<header class="site-header no-print" data-site-header="bear-b">
+  <link rel="stylesheet" href="/brand/header-b3.css" />
+  <nav class="site-nav" aria-label="主导航">
+  <div class="site-nav-inner">
+    <a class="site-brand" href="/" aria-label={SITE.name}>
+      <Image src={bear} width={320} class="brand-bear" alt="" loading="eager" decoding="async" fetchpriority="high" />
+      <span class="site-brand-type">
+        <span class="site-brand-owner">{brandOwner}</span>
+        <span class="site-brand-title">{brandSubject}</span>
+      </span>
     </a>
-    <div class="nav-doors">
+    <div class="site-nav-doors">
       {
         SITE.doors.map((d) => (
           <a href={d.href} aria-current={active === keyOf(d.href) ? 'page' : undefined}>
@@ -26,6 +35,7 @@ const keyOf = (href: string) => {
         ))
       }
     </div>
-    <a class="nav-about" href="/about/" aria-current={active === 'about' ? 'page' : undefined}>关于我</a>
+    <a class="site-nav-about" href="/about/" aria-current={active === 'about' ? 'page' : undefined}>关于我</a>
   </div>
-</nav>
+  </nav>
+</header>

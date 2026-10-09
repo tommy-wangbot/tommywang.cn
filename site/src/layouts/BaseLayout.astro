@@ -8,7 +8,7 @@ interface Props {
   title?: string;
   description?: string;
   active?: 'method' | 'research' | 'notes' | 'about';
-  /** 关闭顶部导航与页脚（/notes 裸页、/admin 写作台用） */
+  /** 写作台等裸页只关闭页脚；全站始终保留共享页头。 */
   bare?: boolean;
   /** 不进搜索引擎（/admin 写作台） */
   noindex?: boolean;
@@ -48,7 +48,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site).href;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body class={bodyClass}>
-    {!bare && <SiteHeader active={active} />}
+    <SiteHeader active={active} />
     <main>
       <slot />
     </main>

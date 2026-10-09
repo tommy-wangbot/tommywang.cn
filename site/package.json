@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && python3 -I ./sync-standalone-header.py dist",
     "preview": "astro preview",
     "check": "astro check"
   },
