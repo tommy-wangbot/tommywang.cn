@@ -46,6 +46,10 @@ if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
 fi
 echo "  ✓ 本地构建完成，产物已就绪 (dist/)"
 
+# 备案硬闸：任一页缺备案名/备案号/公安备案信息就中止（演练模式也检查）
+echo "▶ 备案硬闸检查..."
+python3 -I ./check-beian.py dist || { echo "✗ 备案硬闸未通过，已中止，未改动线上。" >&2; exit 1; }
+
 if [ "$DRY_RUN" -eq 1 ]; then
   echo "▶ [DRY-RUN] 模拟同步预览："
   rsync -avz --dry-run --delete dist/ "$REMOTE_HOST:$REMOTE_DIR/"
